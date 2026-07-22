@@ -4,7 +4,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Sign in to the Kelly Legacy Institute member portal demonstration.",
+  description: "Sign in to the Kelly Legacy Institute member portal.",
 };
 
 export default function LoginPage() {

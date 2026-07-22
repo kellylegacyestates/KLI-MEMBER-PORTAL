@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { InfoCard } from "@/components/ui/InfoCard";
 
 export const metadata: Metadata = {
   title: "Support",
-  description: "A sample support area for the Kelly Legacy Institute member portal.",
+  description: "A support area for the Kelly Legacy Institute member portal.",
 };
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { InfoCard } from "@/components/ui/InfoCard";
 
 export default function SupportPage() {
   return (

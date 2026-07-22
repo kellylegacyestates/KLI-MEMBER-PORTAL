@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { DataTable } from "@/components/ui/DataTable";
 
 export const metadata: Metadata = {
   title: "Standing Ledger",
-  description: "A sample standing ledger for the Kelly Legacy Institute member portal.",
+  description: "A standing ledger for the Kelly Legacy Institute member portal.",
 };
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { DataTable } from "@/components/ui/DataTable";
 
 const rows = [
   { item: "Curriculum reading", due: "12 Jul", status: "In progress", note: "Assigned for review" },

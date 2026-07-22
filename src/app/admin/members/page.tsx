@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "Members",
-  description: "A sample administrative members view for the Kelly Legacy Institute member portal.",
+  description: "An administrative members view for the Kelly Legacy Institute member portal.",
 };
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { DataTable } from "@/components/ui/DataTable";

@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "Library Manager",
-  description: "A sample library manager view for the Kelly Legacy Institute member portal.",
+  description: "A library manager view for the Kelly Legacy Institute member portal.",
 };
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { DataTable } from "@/components/ui/DataTable";

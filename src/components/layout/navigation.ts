@@ -5,14 +5,16 @@ export type NavigationItem = {
 };
 
 export const primaryNavigation: NavigationItem[] = [
-  { label: "Dashboard", href: "/" },
+  { label: "Dashboard", href: "/dashboard" },
   { label: "Curriculum", href: "/curriculum" },
   { label: "Research Library", href: "/research-library" },
   { label: "Publications", href: "/publications" },
   { label: "Weekly Briefings", href: "/briefings" },
   { label: "Standing Ledger", href: "/standing-ledger" },
   { label: "Downloads", href: "/downloads" },
-  { label: "Profile", href: "/profile" },
+  { label: "My Notes", href: "/notes" },
+  { label: "Bookmarks", href: "/bookmarks" },
+  { label: "Account", href: "/profile" },
   { label: "Billing", href: "/billing" },
   { label: "Support", href: "/support" },
 ];

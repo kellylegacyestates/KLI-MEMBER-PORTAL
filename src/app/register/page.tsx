@@ -4,7 +4,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export const metadata: Metadata = {
   title: "Register",
-  description: "Create an account for the Kelly Legacy Institute member portal demonstration.",
+  description: "Create an account for the Kelly Legacy Institute member portal.",
 };
 
 export default function RegisterPage() {

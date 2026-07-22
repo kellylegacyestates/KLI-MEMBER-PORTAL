@@ -1,3 +1,5 @@
+import { GlobalSearch } from "./SearchBar";
+
 type InstitutionalHeaderProps = {
   onMenuToggle: () => void;
 };
@@ -5,7 +7,7 @@ type InstitutionalHeaderProps = {
 export function InstitutionalHeader({ onMenuToggle }: InstitutionalHeaderProps) {
   return (
     <header className="border-b border-[#d8d0bc] bg-[#001f3f] text-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d4af37] bg-[#d4af37]/10 text-sm font-semibold tracking-[0.2em] text-[#f5f1de]">
             KLI
@@ -16,6 +18,10 @@ export function InstitutionalHeader({ onMenuToggle }: InstitutionalHeaderProps) 
             </p>
             <h1 className="text-lg font-semibold text-[#f5f1de]">Member Portal</h1>
           </div>
+        </div>
+
+        <div className="flex-1 lg:max-w-xl">
+          <GlobalSearch />
         </div>
 
         <div className="hidden items-center gap-3 md:flex">

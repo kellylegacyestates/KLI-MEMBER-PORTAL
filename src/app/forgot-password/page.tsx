@@ -4,7 +4,7 @@ import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export const metadata: Metadata = {
   title: "Recover Access",
-  description: "Recover access to the Kelly Legacy Institute member portal demonstration.",
+  description: "Recover access to the Kelly Legacy Institute member portal.",
 };
 
 export default function ForgotPasswordPage() {

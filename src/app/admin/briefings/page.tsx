@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "Briefings Manager",
-  description: "A sample weekly briefing manager view for the Kelly Legacy Institute member portal.",
+  description: "A weekly briefing manager view for the Kelly Legacy Institute member portal.",
 };
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { DataTable } from "@/components/ui/DataTable";

@@ -3,7 +3,7 @@ import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
   title: "Settings",
-  description: "A sample settings view for the Kelly Legacy Institute member portal.",
+  description: "A settings view for the Kelly Legacy Institute member portal.",
 };
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";

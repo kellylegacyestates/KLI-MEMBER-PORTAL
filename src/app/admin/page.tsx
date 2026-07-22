@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
-
-export const metadata: Metadata = {
-  title: "Administration",
-  description: "A sample administrative dashboard for the Kelly Legacy Institute member portal.",
-};
 import { MetricCard } from "@/components/ui/MetricCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
+import { adminPanels } from "@/lib/institutionalContent";
+
+export const metadata: Metadata = {
+  title: "Administration",
+  description: "An administrative dashboard for the Kelly Legacy Institute member portal.",
+};
 
 const metrics = [
   { label: "Members", value: "182", detail: "Active institutional accounts", tone: "navy" as const },
@@ -25,9 +26,10 @@ export default function AdminDashboardPage() {
             <MetricCard key={metric.label} {...metric} />
           ))}
         </div>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <InfoCard title="Operational review" description="A summary of the current administrative workflow and pending publication tasks." />
-          <InfoCard title="Research activity" description="Recent archival access and institutional content updates maintained for the portal." />
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+          {adminPanels.map((panel) => (
+            <InfoCard key={panel.title} title={panel.title} description={panel.description} />
+          ))}
         </div>
       </div>
     </AppShell>

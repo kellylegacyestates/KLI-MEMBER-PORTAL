@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+import { SectionHeader } from "@/components/ui/SectionHeader";
+import { InfoCard } from "@/components/ui/InfoCard";
+import { downloadEntries } from "@/lib/institutionalContent";
 
 export const metadata: Metadata = {
   title: "Downloads",
-  description: "A sample downloads area for the Kelly Legacy Institute member portal.",
+  description: "The institutional documents repository for Kelly Legacy Institute members.",
 };
-import { SectionHeader } from "@/components/ui/SectionHeader";
-import { InfoCard } from "@/components/ui/InfoCard";
-
-const downloads = [
-  { title: "Member handbook", description: "An institutional guide prepared for members navigating the portal and services.", meta: "PDF" },
-  { title: "Research index", description: "A structured list of active resources, publications, and archive categories.", meta: "Index" },
-  { title: "Curriculum outline", description: "A concise chart of module sequencing, milestones, and reading assignments.", meta: "PDF" },
-];
 
 export default function DownloadsPage() {
   return (
     <AppShell>
       <div className="space-y-8">
-        <SectionHeader eyebrow="Downloads" title="Institutional documents" description="A secure repository for member handbooks, reference guides, and structured materials." />
-        <div className="grid gap-6 md:grid-cols-3">
-          {downloads.map((download) => (
-            <InfoCard key={download.title} title={download.title} description={download.description} meta={download.meta} />
+        <SectionHeader
+          eyebrow="Downloads"
+          title="Institutional documents"
+          description="A secure repository for member handbooks, reference guides, and structured materials."
+        />
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {downloadEntries.map((download) => (
+            <InfoCard key={download.title} title={download.title} description={download.description} meta={download.type}>
+              <p className="mt-3 text-sm leading-7 text-[#243449]">File size: {download.size}</p>
+            </InfoCard>
           ))}
         </div>
       </div>
