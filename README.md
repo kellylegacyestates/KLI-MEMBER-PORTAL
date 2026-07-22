@@ -4,6 +4,9 @@
 
 ## Overview
 
+Production domain: https://access.kellylegacyestates.com
+Deployment status: Not yet deployed
+
 The KLI Member Portal is a professional, secure platform for delivering the Fiduciary Foundations curriculum and curated research materials to institutional members. Built with modern web technologies and designed with the aesthetic of a university, research institute, or professional academy.
 
 **Live**: https://access.kellylegacyestates.com

@@ -13,7 +13,7 @@ export function InfoCard({ title, description, meta, children }: InfoCardProps) 
           <h3 className="text-lg font-semibold text-[#001f3f]">{title}</h3>
           <p className="mt-2 text-sm leading-7 text-[#243449]">{description}</p>
         </div>
-        {meta ? <span className="rounded-full bg-[#f5f1de] px-3 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-[#001f3f]">{meta}</span> : null}
+        {meta ? <span className="rounded-full border border-[#d8d0bc] bg-[#f8f6ee] px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#001f3f]">{meta}</span> : null}
       </div>
       {children ? <div className="mt-5">{children}</div> : null}
     </article>

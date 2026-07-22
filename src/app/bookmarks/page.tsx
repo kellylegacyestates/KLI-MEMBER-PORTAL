@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+
+export const metadata: Metadata = {
+  title: "Bookmarks",
+  description: "A sample bookmarks workspace for the Kelly Legacy Institute member portal.",
+};
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 

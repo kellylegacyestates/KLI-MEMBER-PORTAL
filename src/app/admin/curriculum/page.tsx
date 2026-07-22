@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+
+export const metadata: Metadata = {
+  title: "Curriculum Manager",
+  description: "A sample curriculum manager view for the Kelly Legacy Institute member portal.",
+};
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { DataTable } from "@/components/ui/DataTable";
 

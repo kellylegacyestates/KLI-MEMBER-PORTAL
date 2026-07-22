@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "KLI Member Portal",
-  description: "A polished Next.js 15 experience for Kelly Legacy Institute members.",
+  title: {
+    default: "Kelly Legacy Institute Member Portal",
+    template: "%s | Kelly Legacy Institute",
+  },
+  description: "An institutional member portal experience for Kelly Legacy Institute, designed for education, research, and professional stewardship.",
 };
 
 export default function RootLayout({

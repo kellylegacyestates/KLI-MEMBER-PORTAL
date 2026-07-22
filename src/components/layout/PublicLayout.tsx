@@ -8,12 +8,12 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
             <p className="text-[0.65rem] uppercase tracking-[0.35em] text-[#d4af37]">Kelly Legacy Institute</p>
-            <h1 className="mt-1 text-xl font-semibold">Member Portal</h1>
+            <h1 className="mt-1 text-xl font-semibold tracking-tight">Member Portal</h1>
           </div>
-          <nav className="flex flex-wrap items-center gap-2 text-sm">
-            <Link href="/" className="rounded-full px-3 py-2 transition hover:bg-white/10">Overview</Link>
-            <Link href="/login" className="rounded-full px-3 py-2 transition hover:bg-white/10">Login</Link>
-            <Link href="/register" className="rounded-full px-3 py-2 transition hover:bg-white/10">Register</Link>
+          <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Public navigation">
+            <Link href="/" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Overview</Link>
+            <Link href="/login" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Login</Link>
+            <Link href="/register" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Register</Link>
           </nav>
         </div>
       </header>

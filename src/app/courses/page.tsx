@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+
+export const metadata: Metadata = {
+  title: "Courses",
+  description: "A sample course catalog for the Kelly Legacy Institute member portal.",
+};
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 

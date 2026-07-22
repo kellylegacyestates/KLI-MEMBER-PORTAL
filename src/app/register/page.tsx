@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicLayout } from "@/components/layout/PublicLayout";
+
+export const metadata: Metadata = {
+  title: "Register",
+  description: "Create an account for the Kelly Legacy Institute member portal demonstration.",
+};
 
 export default function RegisterPage() {
   return (
