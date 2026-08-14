@@ -80,9 +80,9 @@ export function MemberDashboard() {
 
       {/* Metric summary */}
       <div className="grid gap-6 md:grid-cols-3">
-        <MetricCard label="Current Course" value="7/8" detail="Trust Administration module remains in active study" tone="navy" />
-        <MetricCard label="Learning Progress" value="72%" detail="Progress remains on pace for the current cohort" tone="gold" />
-        <MetricCard label="Research Activity" value="18" detail="Recent references and annotations saved this month" tone="parchment" />
+        <MetricCard label="Current Coursework" value="—" detail="No active course assigned" tone="navy" />
+        <MetricCard label="Learning Progress" value="—" detail="Progress tracking will appear here" tone="gold" />
+        <MetricCard label="Research Activity" value="—" detail="No saved activity yet" tone="parchment" />
       </div>
 
       {/* Content widgets */}
