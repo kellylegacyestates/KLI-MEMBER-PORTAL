@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { MemberProfileCard } from "@/components/features/profile/MemberProfileCard";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Account",
   description: "Member profile and account settings for Kelly Legacy Institute.",
 };
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
   return (
-    <ProtectedRoute>
-      <AppShell>
+    <MemberRouteGuard pathname="/profile">
+          <AppShell>
         <div className="space-y-8">
           <SectionHeader
             eyebrow="Account"
@@ -22,6 +22,6 @@ export default function ProfilePage() {
           <MemberProfileCard />
         </div>
       </AppShell>
-    </ProtectedRoute>
+        </MemberRouteGuard>
   );
 }

@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { bookmarkEntries } from "@/lib/institutionalContent";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Bookmarks",
   description: "The saved resources workspace for Kelly Legacy Institute members.",
 };
 
-export default function BookmarksPage() {
+export default async function BookmarksPage() {
   return (
-    <ProtectedRoute>
-      <AppShell>
+    <MemberRouteGuard pathname="/bookmarks">
+          <AppShell>
         <div className="space-y-8">
           <SectionHeader
             eyebrow="Bookmarks"
@@ -27,6 +27,6 @@ export default function BookmarksPage() {
           </div>
         </div>
       </AppShell>
-    </ProtectedRoute>
+        </MemberRouteGuard>
   );
 }

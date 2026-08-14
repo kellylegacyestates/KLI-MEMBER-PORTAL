@@ -3,60 +3,16 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
-
-// ---------------------------------------------------------------------------
-// Route classification
-// ---------------------------------------------------------------------------
-
-/**
- * Only these four routes are unconditionally public.
- * All other routes require authentication; admin routes additionally require
- * the "admin" role.
- *
- * NOTE: /publications, /research-library, /standing-ledger, and /support were
- * previously classified as public.  Per Phase 1 requirements they are now
- * protected member routes.  If this materially alters product intent, an
- * administrator should reclassify them here.
- */
-const PUBLIC_ROUTES = new Set(["/", "/login", "/register", "/forgot-password"]);
-
-const PROTECTED_MEMBER_ROUTES = [
-  "/dashboard",
-  "/courses",
-  "/curriculum",
-  "/briefings",
-  "/bookmarks",
-  "/notes",
-  "/downloads",
-  "/certificates",
-  "/billing",
-  "/profile",
-  "/publications",
-  "/research-library",
-  "/standing-ledger",
-  "/support",
-];
-
-export function isPublicPath(pathname: string): boolean {
-  return PUBLIC_ROUTES.has(pathname);
-}
-
-export function isAdminPath(pathname: string): boolean {
-  return pathname === "/admin" || pathname.startsWith("/admin/");
-}
-
-export function isProtectedPath(pathname: string): boolean {
-  if (isPublicPath(pathname)) return false;
-  if (isAdminPath(pathname)) return true;
-  return PROTECTED_MEMBER_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
-  );
-}
+import { isAdminPath, isProtectedPath } from "@/lib/auth/routes";
 
 // ---------------------------------------------------------------------------
 // ProtectedRoute component
 // ---------------------------------------------------------------------------
 
+/**
+ * UX-only client guard. Trusted authorization now happens on the server before
+ * protected pages render or protected route handlers run.
+ */
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin, loading, profile, membershipStatus } = useAuth();
   const pathname = usePathname();

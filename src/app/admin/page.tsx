@@ -4,6 +4,7 @@ import { MetricCard } from "@/components/ui/MetricCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { adminPanels } from "@/lib/institutionalContent";
+import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Administration",
@@ -16,8 +17,9 @@ const metrics = [
   { label: "Library Items", value: "1,240", detail: "Research materials available", tone: "parchment" as const },
 ];
 
-export default function AdminDashboardPage() {
+export default async function AdminDashboardPage() {
   return (
+    <AdminRouteGuard pathname="/admin">
     <AppShell>
       <div className="space-y-8">
         <SectionHeader eyebrow="Administrator Dashboard" title="Institutional oversight" description="Administrative tools for managing members, curriculum, publications, and research resources." />
@@ -33,5 +35,6 @@ export default function AdminDashboardPage() {
         </div>
       </div>
     </AppShell>
+    </AdminRouteGuard>
   );
 }

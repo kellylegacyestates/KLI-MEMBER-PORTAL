@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 
 const getFriendlyAuthError = (code: string) => {
@@ -55,10 +55,43 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      await signInWithEmailAndPassword(auth, sanitizedEmail, password);
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        sanitizedEmail,
+        password
+      );
+      const idToken = await credential.user.getIdToken();
+      const sessionResponse = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!sessionResponse.ok) {
+        try {
+          await signOut(auth);
+        } catch {
+          // Best-effort cleanup; the user should not keep a client-only login.
+        }
+
+        setError("We could not complete your sign-in. Please try again.");
+        return;
+      }
+
       const safeRedirectTarget = redirectTarget.startsWith("/") ? redirectTarget : "/dashboard";
       router.replace(safeRedirectTarget);
     } catch (signInError) {
+      if (
+        signInError instanceof Error &&
+        !(typeof signInError === "object" && "code" in signInError)
+      ) {
+        setError("We could not complete your sign-in. Please try again.");
+        return;
+      }
+
       const message = signInError instanceof Error && "code" in signInError ? String(signInError.code) : "";
       setError(getFriendlyAuthError(message));
     } finally {

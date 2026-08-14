@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { curriculumModules } from "@/lib/institutionalContent";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Curriculum",
   description: "The curriculum pathway for Kelly Legacy Institute members, centered on fiduciary foundations and procedural practice.",
 };
 
-export default function CurriculumPage() {
+export default async function CurriculumPage() {
   return (
-    <ProtectedRoute>
-      <AppShell>
+    <MemberRouteGuard pathname="/curriculum">
+          <AppShell>
         <div className="space-y-8">
           <SectionHeader
             eyebrow="Member Curriculum"
@@ -78,6 +78,6 @@ export default function CurriculumPage() {
           </div>
         </div>
       </AppShell>
-    </ProtectedRoute>
+        </MemberRouteGuard>
   );
 }

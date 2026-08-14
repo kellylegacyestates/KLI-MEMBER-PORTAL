@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Library Manager",
@@ -14,13 +15,15 @@ const rows = [
   { title: "Governance Reference", category: "Policy", status: "Available" },
 ];
 
-export default function AdminLibraryPage() {
+export default async function AdminLibraryPage() {
   return (
+    <AdminRouteGuard pathname="/admin/library">
     <AppShell>
       <div className="space-y-8">
         <SectionHeader eyebrow="Administration" title="Library Manager" description="Manage library records, access status, and reference availability." />
         <DataTable title="Library inventory" columns={[{ key: "title", header: "Title" }, { key: "category", header: "Category" }, { key: "status", header: "Status" }]} rows={rows} />
       </div>
     </AppShell>
+    </AdminRouteGuard>
   );
 }

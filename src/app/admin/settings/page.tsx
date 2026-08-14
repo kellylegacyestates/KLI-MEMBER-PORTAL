@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Settings",
@@ -8,8 +9,9 @@ export const metadata: Metadata = {
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 
-export default function AdminSettingsPage() {
+export default async function AdminSettingsPage() {
   return (
+    <AdminRouteGuard pathname="/admin/settings">
     <AppShell>
       <div className="space-y-8">
         <SectionHeader eyebrow="Administration" title="Settings" description="Configure portal preferences, institutional access, and service alignment." />
@@ -19,5 +21,6 @@ export default function AdminSettingsPage() {
         </div>
       </div>
     </AppShell>
+    </AdminRouteGuard>
   );
 }

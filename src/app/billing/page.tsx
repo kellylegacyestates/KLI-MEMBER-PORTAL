@@ -1,18 +1,18 @@
 import type { Metadata } from "next";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Billing",
   description: "The billing overview for Kelly Legacy Institute members.",
 };
 
-export default function BillingPage() {
+export default async function BillingPage() {
   return (
-    <ProtectedRoute>
-      <AppShell>
+    <MemberRouteGuard pathname="/billing">
+          <AppShell>
         <div className="space-y-8">
           <SectionHeader
             eyebrow="Billing"
@@ -37,6 +37,6 @@ export default function BillingPage() {
           </div>
         </div>
       </AppShell>
-    </ProtectedRoute>
+        </MemberRouteGuard>
   );
 }

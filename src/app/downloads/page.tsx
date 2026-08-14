@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { downloadEntries } from "@/lib/institutionalContent";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Downloads",
   description: "The institutional documents repository for Kelly Legacy Institute members.",
 };
 
-export default function DownloadsPage() {
+export default async function DownloadsPage() {
   return (
-    <ProtectedRoute>
-      <AppShell>
+    <MemberRouteGuard pathname="/downloads">
+          <AppShell>
         <div className="space-y-8">
           <SectionHeader
             eyebrow="Downloads"
@@ -29,6 +29,6 @@ export default function DownloadsPage() {
           </div>
         </div>
       </AppShell>
-    </ProtectedRoute>
+        </MemberRouteGuard>
   );
 }

@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Support",
   description: "A support area for the Kelly Legacy Institute member portal.",
 };
 
-export default function SupportPage() {
+export default async function SupportPage() {
   return (
+    <MemberRouteGuard pathname="/support">
     <AppShell>
       <div className="space-y-8">
         <SectionHeader eyebrow="Support" title="Member support" description="Dedicated assistance for access, account guidance, technical support, and institutional requests." />
@@ -20,5 +22,6 @@ export default function SupportPage() {
         </div>
       </div>
     </AppShell>
+    </MemberRouteGuard>
   );
 }

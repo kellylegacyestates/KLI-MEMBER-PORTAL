@@ -3,14 +3,16 @@ import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { researchCategories, researchItems } from "@/lib/institutionalContent";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Research Library",
   description: "The research library collection for Kelly Legacy Institute members, with trusted materials across governance, law, banking, and policy.",
 };
 
-export default function ResearchLibraryPage() {
+export default async function ResearchLibraryPage() {
   return (
+    <MemberRouteGuard pathname="/research-library">
     <AppShell>
       <div className="space-y-8">
         <SectionHeader
@@ -47,5 +49,6 @@ export default function ResearchLibraryPage() {
         </div>
       </div>
     </AppShell>
+    </MemberRouteGuard>
   );
 }

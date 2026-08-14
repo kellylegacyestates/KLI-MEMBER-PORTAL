@@ -3,14 +3,16 @@ import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { publicationEntries } from "@/lib/institutionalContent";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Publications",
   description: "The institutional publication archive for Kelly Legacy Institute members and fellows.",
 };
 
-export default function PublicationsPage() {
+export default async function PublicationsPage() {
   return (
+    <MemberRouteGuard pathname="/publications">
     <AppShell>
       <div className="space-y-8">
         <SectionHeader
@@ -27,5 +29,6 @@ export default function PublicationsPage() {
         </div>
       </div>
     </AppShell>
+    </MemberRouteGuard>
   );
 }
