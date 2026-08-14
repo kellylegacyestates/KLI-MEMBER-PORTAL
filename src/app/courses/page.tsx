@@ -18,16 +18,16 @@ const courses = [
 export default async function CoursesPage() {
   return (
     <MemberRouteGuard pathname="/courses">
-          <AppShell>
-        <div className="space-y-8">
-          <SectionHeader eyebrow="Courses" title="Course catalog" description="A carefully curated set of professional learning experiences for member advancement." />
-          <div className="grid gap-6 md:grid-cols-3">
-            {courses.map((course) => (
-              <InfoCard key={course.title} title={course.title} description={course.description} meta={course.meta} />
-            ))}
+      <AppShell>
+          <div className="space-y-8">
+            <SectionHeader eyebrow="Courses" title="Course catalog" description="A carefully curated set of professional learning experiences for member advancement." />
+            <div className="grid gap-6 md:grid-cols-3">
+              {courses.map((course) => (
+                <InfoCard key={course.title} title={course.title} description={course.description} meta={course.meta} />
+              ))}
+            </div>
           </div>
-        </div>
-      </AppShell>
-        </MemberRouteGuard>
+        </AppShell>
+    </MemberRouteGuard>
   );
 }

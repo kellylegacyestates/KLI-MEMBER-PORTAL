@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookieName, getSessionCookieOptions, getSessionDurationMs } from "@/lib/auth/cookies";
+import { isTrustedOrigin } from "@/lib/auth/request-safety";
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin";
 
 export const runtime = "nodejs";
@@ -11,16 +12,6 @@ function clearSessionCookie(response: NextResponse) {
     ...getSessionCookieOptions(0),
     expires: new Date(0),
   });
-}
-
-function isTrustedOrigin(request: NextRequest) {
-  const origin = request.headers.get("origin");
-
-  if (!origin) {
-    return false;
-  }
-
-  return origin === request.nextUrl.origin;
 }
 
 export async function POST(request: NextRequest) {

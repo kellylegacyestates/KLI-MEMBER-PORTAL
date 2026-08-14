@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminLibraryPage() {
   return (
     <AdminRouteGuard pathname="/admin/library">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Library Manager" description="Manage library records, access status, and reference availability." />
-        <DataTable title="Library inventory" columns={[{ key: "title", header: "Title" }, { key: "category", header: "Category" }, { key: "status", header: "Status" }]} rows={rows} />
-      </div>
-    </AppShell>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Library Manager" description="Manage library records, access status, and reference availability." />
+          <DataTable title="Library inventory" columns={[{ key: "title", header: "Title" }, { key: "category", header: "Category" }, { key: "status", header: "Status" }]} rows={rows} />
+        </div>
+      </AppShell>
     </AdminRouteGuard>
   );
 }

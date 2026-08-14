@@ -84,16 +84,12 @@ export function LoginForm() {
       const safeRedirectTarget = redirectTarget.startsWith("/") ? redirectTarget : "/dashboard";
       router.replace(safeRedirectTarget);
     } catch (signInError) {
-      if (
-        signInError instanceof Error &&
-        !(typeof signInError === "object" && "code" in signInError)
-      ) {
+      if (!(signInError instanceof Error) || !("code" in signInError)) {
         setError("We could not complete your sign-in. Please try again.");
         return;
       }
 
-      const message = signInError instanceof Error && "code" in signInError ? String(signInError.code) : "";
-      setError(getFriendlyAuthError(message));
+      setError(getFriendlyAuthError(String(signInError.code)));
     } finally {
       setIsSubmitting(false);
     }

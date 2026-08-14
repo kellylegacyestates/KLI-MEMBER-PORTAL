@@ -12,16 +12,16 @@ export const metadata: Metadata = {
 export default async function SupportPage() {
   return (
     <MemberRouteGuard pathname="/support">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Support" title="Member support" description="Dedicated assistance for access, account guidance, technical support, and institutional requests." />
-        <div className="grid gap-6 md:grid-cols-3">
-          <InfoCard title="Account support" description="Guidance for sign-in, recovery, and member access concerns." meta="Priority" />
-          <InfoCard title="Technical assistance" description="Support for platform access, document retrieval, and service questions." meta="24/7" />
-          <InfoCard title="Administrative requests" description="A channel for non-technical institutional and membership concerns." meta="Office" />
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Support" title="Member support" description="Dedicated assistance for access, account guidance, technical support, and institutional requests." />
+          <div className="grid gap-6 md:grid-cols-3">
+            <InfoCard title="Account support" description="Guidance for sign-in, recovery, and member access concerns." meta="Priority" />
+            <InfoCard title="Technical assistance" description="Support for platform access, document retrieval, and service questions." meta="24/7" />
+            <InfoCard title="Administrative requests" description="A channel for non-technical institutional and membership concerns." meta="Office" />
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </AppShell>
     </MemberRouteGuard>
   );
 }

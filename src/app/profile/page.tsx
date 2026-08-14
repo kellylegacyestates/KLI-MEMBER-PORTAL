@@ -12,16 +12,16 @@ export const metadata: Metadata = {
 export default async function ProfilePage() {
   return (
     <MemberRouteGuard pathname="/profile">
-          <AppShell>
-        <div className="space-y-8">
-          <SectionHeader
-            eyebrow="Account"
-            title="Member profile"
-            description="Review and update your institutional identity, contact details, and professional interests."
-          />
-          <MemberProfileCard />
-        </div>
-      </AppShell>
-        </MemberRouteGuard>
+      <AppShell>
+          <div className="space-y-8">
+            <SectionHeader
+              eyebrow="Account"
+              title="Member profile"
+              description="Review and update your institutional identity, contact details, and professional interests."
+            />
+            <MemberProfileCard />
+          </div>
+        </AppShell>
+    </MemberRouteGuard>
   );
 }

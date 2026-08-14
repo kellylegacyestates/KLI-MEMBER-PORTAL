@@ -18,16 +18,16 @@ const certificates = [
 export default async function CertificatesPage() {
   return (
     <MemberRouteGuard pathname="/certificates">
-          <AppShell>
-        <div className="space-y-8">
-          <SectionHeader eyebrow="Certificates" title="Member certificates" description="A record of completed coursework and professional achievements issued through the portal." />
-          <div className="grid gap-6 md:grid-cols-3">
-            {certificates.map((certificate) => (
-              <InfoCard key={certificate.title} title={certificate.title} description={certificate.description} meta={certificate.meta} />
-            ))}
+      <AppShell>
+          <div className="space-y-8">
+            <SectionHeader eyebrow="Certificates" title="Member certificates" description="A record of completed coursework and professional achievements issued through the portal." />
+            <div className="grid gap-6 md:grid-cols-3">
+              {certificates.map((certificate) => (
+                <InfoCard key={certificate.title} title={certificate.title} description={certificate.description} meta={certificate.meta} />
+              ))}
+            </div>
           </div>
-        </div>
-      </AppShell>
-        </MemberRouteGuard>
+        </AppShell>
+    </MemberRouteGuard>
   );
 }

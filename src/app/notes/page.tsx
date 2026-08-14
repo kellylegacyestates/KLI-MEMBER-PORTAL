@@ -13,20 +13,20 @@ export const metadata: Metadata = {
 export default async function NotesPage() {
   return (
     <MemberRouteGuard pathname="/notes">
-          <AppShell>
-        <div className="space-y-8">
-          <SectionHeader
-            eyebrow="My Notes"
-            title="Member notes"
-            description="A dedicated workspace for annotations, observations, and reference points tied to member learning."
-          />
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {notesEntries.map((note) => (
-              <InfoCard key={note.title} title={note.title} description={note.description} meta={note.meta} />
-            ))}
+      <AppShell>
+          <div className="space-y-8">
+            <SectionHeader
+              eyebrow="My Notes"
+              title="Member notes"
+              description="A dedicated workspace for annotations, observations, and reference points tied to member learning."
+            />
+            <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {notesEntries.map((note) => (
+                <InfoCard key={note.title} title={note.title} description={note.description} meta={note.meta} />
+              ))}
+            </div>
           </div>
-        </div>
-      </AppShell>
-        </MemberRouteGuard>
+        </AppShell>
+    </MemberRouteGuard>
   );
 }

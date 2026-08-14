@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminBriefingsPage() {
   return (
     <AdminRouteGuard pathname="/admin/briefings">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Weekly Briefings Manager" description="Coordinate briefing publication, audience targeting, and release calendar." />
-        <DataTable title="Briefing queue" columns={[{ key: "title", header: "Title" }, { key: "status", header: "Status" }, { key: "audience", header: "Audience" }]} rows={rows} />
-      </div>
-    </AppShell>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Weekly Briefings Manager" description="Coordinate briefing publication, audience targeting, and release calendar." />
+          <DataTable title="Briefing queue" columns={[{ key: "title", header: "Title" }, { key: "status", header: "Status" }, { key: "audience", header: "Audience" }]} rows={rows} />
+        </div>
+      </AppShell>
     </AdminRouteGuard>
   );
 }

@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 export default async function MemberDashboardPage() {
   return (
     <MemberRouteGuard pathname="/dashboard">
-          <AppShell>
-        <MemberDashboard />
-      </AppShell>
-        </MemberRouteGuard>
+      <AppShell>
+          <MemberDashboard />
+        </AppShell>
+    </MemberRouteGuard>
   );
 }

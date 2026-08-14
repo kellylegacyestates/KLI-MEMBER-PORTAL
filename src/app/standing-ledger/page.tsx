@@ -18,12 +18,12 @@ const rows = [
 export default async function StandingLedgerPage() {
   return (
     <MemberRouteGuard pathname="/standing-ledger">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Standing Ledger" title="Member obligations" description="A formal record of current assignments, confirmations, and follow-up items." />
-        <DataTable title="Ledger entries" columns={[{ key: "item", header: "Item" }, { key: "due", header: "Due" }, { key: "status", header: "Status" }, { key: "note", header: "Note" }]} rows={rows} />
-      </div>
-    </AppShell>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Standing Ledger" title="Member obligations" description="A formal record of current assignments, confirmations, and follow-up items." />
+          <DataTable title="Ledger entries" columns={[{ key: "item", header: "Item" }, { key: "due", header: "Due" }, { key: "status", header: "Status" }, { key: "note", header: "Note" }]} rows={rows} />
+        </div>
+      </AppShell>
     </MemberRouteGuard>
   );
 }

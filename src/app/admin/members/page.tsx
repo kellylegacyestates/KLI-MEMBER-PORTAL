@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminMembersPage() {
   return (
     <AdminRouteGuard pathname="/admin/members">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Members" description="Manage institutional accounts and review access for member groups." />
-        <DataTable title="Member accounts" columns={[{ key: "name", header: "Name" }, { key: "institution", header: "Institution" }, { key: "status", header: "Status" }, { key: "access", header: "Access" }]} rows={rows} />
-      </div>
-    </AppShell>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Members" description="Manage institutional accounts and review access for member groups." />
+          <DataTable title="Member accounts" columns={[{ key: "name", header: "Name" }, { key: "institution", header: "Institution" }, { key: "status", header: "Status" }, { key: "access", header: "Access" }]} rows={rows} />
+        </div>
+      </AppShell>
     </AdminRouteGuard>
   );
 }

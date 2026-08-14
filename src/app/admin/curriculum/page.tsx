@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminCurriculumPage() {
   return (
     <AdminRouteGuard pathname="/admin/curriculum">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Curriculum Manager" description="Oversee curriculum modules and publication readiness for the member experience." />
-        <DataTable title="Curriculum inventory" columns={[{ key: "module", header: "Module" }, { key: "status", header: "Status" }, { key: "updated", header: "Updated" }]} rows={rows} />
-      </div>
-    </AppShell>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Curriculum Manager" description="Oversee curriculum modules and publication readiness for the member experience." />
+          <DataTable title="Curriculum inventory" columns={[{ key: "module", header: "Module" }, { key: "status", header: "Status" }, { key: "updated", header: "Updated" }]} rows={rows} />
+        </div>
+      </AppShell>
     </AdminRouteGuard>
   );
 }

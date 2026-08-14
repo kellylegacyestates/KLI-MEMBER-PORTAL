@@ -18,16 +18,16 @@ const metrics = [
 export default async function AdminAnalyticsPage() {
   return (
     <AdminRouteGuard pathname="/admin/analytics">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Analytics" description="Institutional engagement metrics prepared for internal review and strategic planning." />
-        <div className="grid gap-6 md:grid-cols-3">
-          {metrics.map((metric) => (
-            <MetricCard key={metric.label} {...metric} />
-          ))}
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Analytics" description="Institutional engagement metrics prepared for internal review and strategic planning." />
+          <div className="grid gap-6 md:grid-cols-3">
+            {metrics.map((metric) => (
+              <MetricCard key={metric.label} {...metric} />
+            ))}
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </AppShell>
     </AdminRouteGuard>
   );
 }

@@ -1,6 +1,18 @@
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 
+async function clearServerSessionCookie() {
+  const response = await fetch("/api/auth/logout", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    cache: "no-store",
+  });
+
+  return response.ok;
+}
+
 export async function logoutUser() {
   let clientLogoutFailed = false;
 
@@ -15,16 +27,10 @@ export async function logoutUser() {
   let serverLogoutFailed = false;
 
   try {
-    const response = await fetch("/api/auth/logout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
+    serverLogoutFailed = !(await clearServerSessionCookie());
 
-    if (!response.ok) {
-      serverLogoutFailed = true;
+    if (serverLogoutFailed) {
+      serverLogoutFailed = !(await clearServerSessionCookie());
     }
   } catch {
     serverLogoutFailed = true;

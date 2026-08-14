@@ -9,7 +9,7 @@ function getServiceAccountConfig() {
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL?.trim();
   const privateKey = process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n").trim();
 
-  if (!projectId && !clientEmail && !privateKey) {
+  if ((!projectId && !clientEmail && !privateKey) || (projectId && !clientEmail && !privateKey)) {
     return null;
   }
 

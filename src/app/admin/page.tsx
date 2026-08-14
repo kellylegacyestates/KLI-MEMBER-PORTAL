@@ -20,21 +20,21 @@ const metrics = [
 export default async function AdminDashboardPage() {
   return (
     <AdminRouteGuard pathname="/admin">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administrator Dashboard" title="Institutional oversight" description="Administrative tools for managing members, curriculum, publications, and research resources." />
-        <div className="grid gap-6 md:grid-cols-3">
-          {metrics.map((metric) => (
-            <MetricCard key={metric.label} {...metric} />
-          ))}
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administrator Dashboard" title="Institutional oversight" description="Administrative tools for managing members, curriculum, publications, and research resources." />
+          <div className="grid gap-6 md:grid-cols-3">
+            {metrics.map((metric) => (
+              <MetricCard key={metric.label} {...metric} />
+            ))}
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {adminPanels.map((panel) => (
+              <InfoCard key={panel.title} title={panel.title} description={panel.description} />
+            ))}
+          </div>
         </div>
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {adminPanels.map((panel) => (
-            <InfoCard key={panel.title} title={panel.title} description={panel.description} />
-          ))}
-        </div>
-      </div>
-    </AppShell>
+      </AppShell>
     </AdminRouteGuard>
   );
 }

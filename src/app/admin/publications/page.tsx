@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminPublicationsPage() {
   return (
     <AdminRouteGuard pathname="/admin/publications">
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Publication Manager" description="Coordinate publication readiness, release timing, and distribution settings." />
-        <DataTable title="Publication queue" columns={[{ key: "title", header: "Title" }, { key: "status", header: "Status" }, { key: "audience", header: "Audience" }]} rows={rows} />
-      </div>
-    </AppShell>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Publication Manager" description="Coordinate publication readiness, release timing, and distribution settings." />
+          <DataTable title="Publication queue" columns={[{ key: "title", header: "Title" }, { key: "status", header: "Status" }, { key: "audience", header: "Audience" }]} rows={rows} />
+        </div>
+      </AppShell>
     </AdminRouteGuard>
   );
 }
