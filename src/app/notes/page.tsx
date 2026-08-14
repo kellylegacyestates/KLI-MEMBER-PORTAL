@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
@@ -11,19 +12,21 @@ export const metadata: Metadata = {
 
 export default function NotesPage() {
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader
-          eyebrow="My Notes"
-          title="Member notes"
-          description="A dedicated workspace for annotations, observations, and reference points tied to member learning."
-        />
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {notesEntries.map((note) => (
-            <InfoCard key={note.title} title={note.title} description={note.description} meta={note.meta} />
-          ))}
+    <ProtectedRoute>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader
+            eyebrow="My Notes"
+            title="Member notes"
+            description="A dedicated workspace for annotations, observations, and reference points tied to member learning."
+          />
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {notesEntries.map((note) => (
+              <InfoCard key={note.title} title={note.title} description={note.description} meta={note.meta} />
+            ))}
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </AppShell>
+    </ProtectedRoute>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
@@ -11,19 +12,21 @@ export const metadata: Metadata = {
 
 export default function ProfilePage() {
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader
-          eyebrow="Account"
-          title="Member account"
-          description="A central record for institutional identity, contact details, and professional interests."
-        />
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {accountSections.map((section) => (
-            <InfoCard key={section.title} title={section.title} description={section.description} />
-          ))}
+    <ProtectedRoute>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader
+            eyebrow="Account"
+            title="Member account"
+            description="A central record for institutional identity, contact details, and professional interests."
+          />
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {accountSections.map((section) => (
+              <InfoCard key={section.title} title={section.title} description={section.description} />
+            ))}
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </AppShell>
+    </ProtectedRoute>
   );
 }

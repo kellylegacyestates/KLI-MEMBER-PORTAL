@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
@@ -16,15 +17,17 @@ const certificates = [
 
 export default function CertificatesPage() {
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Certificates" title="Member certificates" description="A record of completed coursework and professional achievements issued through the portal." />
-        <div className="grid gap-6 md:grid-cols-3">
-          {certificates.map((certificate) => (
-            <InfoCard key={certificate.title} title={certificate.title} description={certificate.description} meta={certificate.meta} />
-          ))}
+    <ProtectedRoute>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Certificates" title="Member certificates" description="A record of completed coursework and professional achievements issued through the portal." />
+          <div className="grid gap-6 md:grid-cols-3">
+            {certificates.map((certificate) => (
+              <InfoCard key={certificate.title} title={certificate.title} description={certificate.description} meta={certificate.meta} />
+            ))}
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </AppShell>
+    </ProtectedRoute>
   );
 }

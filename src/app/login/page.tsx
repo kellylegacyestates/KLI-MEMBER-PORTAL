@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Suspense } from "react";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export const metadata: Metadata = {
@@ -19,25 +20,9 @@ export default function LoginPage() {
           </p>
         </section>
 
-        <section className="rounded-[2rem] border border-[#d8d0bc] bg-white p-8 shadow-sm sm:p-10">
-          <h2 className="text-2xl font-semibold text-[#001f3f]">Member sign-in</h2>
-          <form className="mt-6 space-y-4">
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[#001f3f]">Email address</label>
-              <input className="w-full rounded-2xl border border-[#d8d0bc] bg-[#f8f6ee] px-4 py-3 outline-none focus:border-[#d4af37]" placeholder="member@kellylegacyinstitute.org" />
-            </div>
-            <div>
-              <label className="mb-2 block text-sm font-medium text-[#001f3f]">Password</label>
-              <input type="password" className="w-full rounded-2xl border border-[#d8d0bc] bg-[#f8f6ee] px-4 py-3 outline-none focus:border-[#d4af37]" placeholder="••••••••" />
-            </div>
-            <button className="w-full rounded-full bg-[#001f3f] px-5 py-3 text-sm font-semibold text-[#f5f1de] transition hover:bg-[#072b57]">Sign in</button>
-          </form>
-
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-sm text-[#243449]">
-            <Link href="/forgot-password" className="font-medium text-[#001f3f]">Forgot password?</Link>
-            <Link href="/register" className="font-medium text-[#001f3f]">Create account</Link>
-          </div>
-        </section>
+        <Suspense fallback={<div className="flex items-center justify-center rounded-[2rem] border border-[#d8d0bc] bg-white p-8 sm:p-10 h-[400px]">Loading...</div>}>
+          <LoginForm />
+        </Suspense>
       </div>
     </PublicLayout>
   );
