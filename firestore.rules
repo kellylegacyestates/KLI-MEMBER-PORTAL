@@ -30,20 +30,20 @@ service cloud.firestore {
       // UPDATE: allowed only by the document's own authenticated user, with
       // strict constraints on what they may change.
       //
-      // Protected fields (role, membershipStatus, uid, email, createdAt) must
-      // remain identical to their current values.  Members may update only
-      // displayName, institution, membershipPurpose, and updatedAt.
+      // Only the four explicitly listed fields may be touched in any write.
+      // This prevents clients from adding arbitrary new fields and ensures
+      // that protected fields (role, membershipStatus, uid, email, createdAt)
+      // can never be modified or deleted by the member.
       allow update: if request.auth != null
                     && request.auth.uid == uid
-                    // Role cannot be changed by the user.
+                    // Only these four keys may appear in the diff.
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['displayName', 'institution', 'membershipPurpose', 'updatedAt'])
+                    // Protected fields must remain identical to their stored values.
                     && request.resource.data.role == resource.data.role
-                    // Membership status cannot be changed by the user.
                     && request.resource.data.membershipStatus == resource.data.membershipStatus
-                    // uid is immutable.
                     && request.resource.data.uid == resource.data.uid
-                    // email is immutable via client writes.
                     && request.resource.data.email == resource.data.email
-                    // createdAt is immutable.
                     && request.resource.data.createdAt == resource.data.createdAt;
 
       // DELETE: never permitted via the client SDK.
