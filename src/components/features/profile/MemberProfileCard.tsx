@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { LoadingState } from "@/components/ui/LoadingState";
@@ -81,18 +81,19 @@ export function MemberProfileCard() {
   const [error, setError] = useState<string | null>(null);
 
   // Local editable state, initialised from the resolved profile.
-  const [displayName, setDisplayName] = useState(profile?.displayName ?? "");
-  const [institution, setInstitution] = useState(profile?.institution ?? "");
-  const [membershipPurpose, setMembershipPurpose] = useState(profile?.membershipPurpose ?? "");
+  const [displayName, setDisplayName] = useState("");
+  const [institution, setInstitution] = useState("");
+  const [membershipPurpose, setMembershipPurpose] = useState("");
 
-  // Keep local state in sync when profile is first loaded.
-  const [initialised, setInitialised] = useState(false);
-  if (profile && !initialised) {
-    setDisplayName(profile.displayName);
-    setInstitution(profile.institution);
-    setMembershipPurpose(profile.membershipPurpose);
-    setInitialised(true);
-  }
+  // Sync editable fields when the profile loads (or changes), but only when
+  // the user is not mid-edit to avoid overwriting in-progress changes.
+  useEffect(() => {
+    if (profile && !editing) {
+      setDisplayName(profile.displayName);
+      setInstitution(profile.institution);
+      setMembershipPurpose(profile.membershipPurpose);
+    }
+  }, [profile, editing]);
 
   if (loading) {
     return <LoadingState label="Loading your member profile…" />;
