@@ -2,6 +2,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   serverTimestamp,
   type Firestore,
   type FieldValue,
@@ -158,4 +159,24 @@ export async function createUserProfile(
   };
 
   await setDoc(ref, profileData);
+}
+
+/**
+ * Update the editable fields of a user's own profile.
+ *
+ * SECURITY NOTE: Only the fields explicitly listed here may be mutated by the
+ * member themselves.  Role and membershipStatus are intentionally excluded —
+ * those are admin-only operations.
+ */
+export async function updateUserProfile(
+  db: Firestore,
+  uid: string,
+  fields: Partial<{
+    displayName: string;
+    institution: string;
+    membershipPurpose: string;
+  }>
+): Promise<void> {
+  const ref = doc(db, USERS_COLLECTION, uid);
+  await updateDoc(ref, { ...fields, updatedAt: serverTimestamp() });
 }
