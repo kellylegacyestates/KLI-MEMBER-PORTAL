@@ -1,3 +1,8 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { logoutUser } from "@/lib/auth/logout";
 import { GlobalSearch } from "./SearchBar";
 
 type InstitutionalHeaderProps = {
@@ -5,6 +10,18 @@ type InstitutionalHeaderProps = {
 };
 
 export function InstitutionalHeader({ onMenuToggle }: InstitutionalHeaderProps) {
+  const router = useRouter();
+  const { user, loading } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      router.push("/login");
+    } catch {
+      router.push("/login");
+    }
+  };
+
   return (
     <header className="border-b border-[#d8d0bc] bg-[#001f3f] text-white">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
@@ -31,6 +48,15 @@ export function InstitutionalHeader({ onMenuToggle }: InstitutionalHeaderProps) 
           <div className="rounded-full bg-[#d4af37] px-4 py-2 text-sm font-semibold text-[#001f3f]">
             Member Services
           </div>
+          {!loading && user ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm font-medium text-[#f5f1de] transition hover:bg-white/20"
+            >
+              Sign out
+            </button>
+          ) : null}
         </div>
 
         <button

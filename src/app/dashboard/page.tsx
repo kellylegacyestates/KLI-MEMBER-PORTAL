@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import { AppShell } from "@/components/layout/AppShell";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
@@ -31,26 +32,28 @@ const dashboardCards = [
 
 export default function MemberDashboardPage() {
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader
-          eyebrow="Home Dashboard"
-          title={dashboardWidgets.welcome}
-          description="A curated view of current learning, research, and administrative activity for Kelly Legacy Institute members."
-        />
+    <ProtectedRoute>
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader
+            eyebrow="Home Dashboard"
+            title={dashboardWidgets.welcome}
+            description="A curated view of current learning, research, and administrative activity for Kelly Legacy Institute members."
+          />
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {metrics.map((metric) => (
-            <MetricCard key={metric.label} {...metric} />
-          ))}
-        </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {metrics.map((metric) => (
+              <MetricCard key={metric.label} {...metric} />
+            ))}
+          </div>
 
-        <div className="grid gap-6 xl:grid-cols-2">
-          {dashboardCards.map((card) => (
-            <InfoCard key={card.title} title={card.title} description={card.description} meta={card.meta} />
-          ))}
+          <div className="grid gap-6 xl:grid-cols-2">
+            {dashboardCards.map((card) => (
+              <InfoCard key={card.title} title={card.title} description={card.description} meta={card.meta} />
+            ))}
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </AppShell>
+    </ProtectedRoute>
   );
 }
