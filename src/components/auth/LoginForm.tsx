@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
+import { safeRedirectTarget } from "@/lib/auth/redirect";
 
 const getFriendlyAuthError = (code: string) => {
   switch (code) {
@@ -13,9 +14,9 @@ const getFriendlyAuthError = (code: string) => {
     case "auth/user-disabled":
       return "This member account has been disabled.";
     case "auth/user-not-found":
-      return "We could not find an account with that email.";
+      return "The sign-in details are invalid. Please try again.";
     case "auth/wrong-password":
-      return "The password you entered is incorrect.";
+      return "The sign-in details are invalid. Please try again.";
     case "auth/invalid-credential":
       return "The sign-in details are invalid. Please try again.";
     case "auth/too-many-requests":
@@ -81,8 +82,8 @@ export function LoginForm() {
         return;
       }
 
-      const safeRedirectTarget = redirectTarget.startsWith("/") ? redirectTarget : "/dashboard";
-      router.replace(safeRedirectTarget);
+      const safeRedirect = safeRedirectTarget(redirectTarget);
+      router.replace(safeRedirect);
     } catch (signInError) {
       if (!(signInError instanceof Error) || !("code" in signInError)) {
         setError("We could not complete your sign-in. Please try again.");

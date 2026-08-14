@@ -4,9 +4,6 @@ import { auth } from "@/lib/firebase/client";
 async function clearServerSessionCookie() {
   const response = await fetch("/api/auth/logout", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
     cache: "no-store",
   });
 
