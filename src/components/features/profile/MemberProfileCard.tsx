@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { LoadingState } from "@/components/ui/LoadingState";
 import { db } from "@/lib/firebase/client";
-import { updateUserProfile } from "@/lib/firebase/userProfile";
+import { updateUserProfile, type ResolvedUserProfile } from "@/lib/firebase/userProfile";
+import type { User } from "firebase/auth";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -70,45 +71,29 @@ function FieldRow({ label, value, editing, inputId, multiline, onChange }: Field
 }
 
 // ---------------------------------------------------------------------------
-// Main component
+// Inner form — receives resolved profile as props so state can be initialised
+// directly without a synchronising effect.  Keyed on profile.uid by the outer
+// component so it remounts (and resets) whenever the identity changes.
 // ---------------------------------------------------------------------------
 
-export function MemberProfileCard() {
-  const { user, profile, loading, refreshProfile } = useAuth();
+type ProfileFormProps = {
+  user: User;
+  profile: ResolvedUserProfile;
+  refreshProfile: () => Promise<void>;
+};
 
+function ProfileForm({ user, profile, refreshProfile }: ProfileFormProps) {
+  // State is initialised directly from props; no useEffect sync needed because
+  // the component is keyed on profile.uid and will remount on identity change.
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Local editable state, initialised from the resolved profile.
-  const [displayName, setDisplayName] = useState("");
-  const [institution, setInstitution] = useState("");
-  const [membershipPurpose, setMembershipPurpose] = useState("");
-
-  // Sync editable fields when the profile loads (or changes), but only when
-  // the user is not mid-edit to avoid overwriting in-progress changes.
-  useEffect(() => {
-    if (profile && !editing) {
-      setDisplayName(profile.displayName);
-      setInstitution(profile.institution);
-      setMembershipPurpose(profile.membershipPurpose);
-    }
-  }, [profile, editing]);
-
-  if (loading) {
-    return <LoadingState label="Loading your member profile…" />;
-  }
-
-  if (!profile || !user) {
-    return (
-      <div className="rounded-[1.5rem] border border-[#d8d0bc] bg-white p-6 text-sm text-[#243449]">
-        Your profile could not be loaded. Please refresh or contact support.
-      </div>
-    );
-  }
+  const [displayName, setDisplayName] = useState(profile.displayName);
+  const [institution, setInstitution] = useState(profile.institution);
+  const [membershipPurpose, setMembershipPurpose] = useState(profile.membershipPurpose);
 
   async function handleSave() {
-    if (!db || !user) return;
+    if (!db) return;
     setSaving(true);
     setError(null);
     try {
@@ -123,10 +108,9 @@ export function MemberProfileCard() {
   }
 
   function handleCancel() {
-    // Reset to committed values.
-    setDisplayName(profile?.displayName ?? "");
-    setInstitution(profile?.institution ?? "");
-    setMembershipPurpose(profile?.membershipPurpose ?? "");
+    setDisplayName(profile.displayName);
+    setInstitution(profile.institution);
+    setMembershipPurpose(profile.membershipPurpose);
     setError(null);
     setEditing(false);
   }
@@ -248,3 +232,28 @@ export function MemberProfileCard() {
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Public export — guards loading/null state before rendering the form
+// ---------------------------------------------------------------------------
+
+export function MemberProfileCard() {
+  const { user, profile, loading, refreshProfile } = useAuth();
+
+  if (loading) {
+    return <LoadingState label="Loading your member profile…" />;
+  }
+
+  if (!profile || !user) {
+    return (
+      <div className="rounded-[1.5rem] border border-[#d8d0bc] bg-white p-6 text-sm text-[#243449]">
+        Your profile could not be loaded. Please refresh or contact support.
+      </div>
+    );
+  }
+
+  // Key on uid so ProfileForm remounts (resetting all local state) if the
+  // signed-in identity ever changes within the same session.
+  return <ProfileForm key={profile.uid} user={user} profile={profile} refreshProfile={refreshProfile} />;
+}
+
