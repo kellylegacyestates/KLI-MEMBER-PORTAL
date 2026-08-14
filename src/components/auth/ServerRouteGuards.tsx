@@ -6,7 +6,7 @@ import {
   type MemberAuthorizationResult,
 } from "@/lib/auth/server";
 
-function redirectToLogin(pathname: string) {
+function redirectToLogin(pathname: string): never {
   redirect(`/login?redirect=${encodeURIComponent(pathname)}`);
 }
 
