@@ -95,7 +95,7 @@ export function MemberProfileCard() {
   }
 
   if (loading) {
-    return <LoadingState message="Loading your member profile…" />;
+    return <LoadingState label="Loading your member profile…" />;
   }
 
   if (!profile || !user) {

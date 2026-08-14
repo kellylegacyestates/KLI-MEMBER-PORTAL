@@ -32,7 +32,7 @@ export function MemberDashboard() {
   const { profile, user, loading } = useAuth();
 
   if (loading) {
-    return <LoadingState message="Loading your dashboard…" />;
+    return <LoadingState label="Loading your dashboard…" />;
   }
 
   const firstName = profile?.displayName
