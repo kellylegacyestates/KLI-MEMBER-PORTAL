@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { adminNavigation, primaryNavigation } from "./navigation";
 
 function NavItem({ label, href }: { label: string; href: string }) {
@@ -21,6 +22,8 @@ function NavItem({ label, href }: { label: string; href: string }) {
 }
 
 export function SidebarNav() {
+  const { isAdmin } = useAuth();
+
   return (
     <nav className="h-full border-r border-[#d8d0bc] bg-[#f8f6ee] p-4 lg:p-6">
       <div className="rounded-[1.5rem] border border-[#d8d0bc] bg-white/80 p-4 shadow-sm">
@@ -36,16 +39,19 @@ export function SidebarNav() {
           ))}
         </ul>
 
-        <div className="mt-6 rounded-[1.25rem] border border-[#d8d0bc] bg-[#001f3f] p-4 text-[#f5f1de]">
-          <p className="text-[0.66rem] font-semibold uppercase tracking-[0.3em] text-[#d4af37]">
-            Administrator
-          </p>
-          <ul className="mt-3 space-y-1">
-            {adminNavigation.map((item) => (
-              <NavItem key={item.label} label={item.label} href={item.href} />
-            ))}
-          </ul>
-        </div>
+        {/* Administrator section — rendered only for confirmed admin profiles. */}
+        {isAdmin && (
+          <div className="mt-6 rounded-[1.25rem] border border-[#d8d0bc] bg-[#001f3f] p-4 text-[#f5f1de]">
+            <p className="text-[0.66rem] font-semibold uppercase tracking-[0.3em] text-[#d4af37]">
+              Administrator
+            </p>
+            <ul className="mt-3 space-y-1">
+              {adminNavigation.map((item) => (
+                <NavItem key={item.label} label={item.label} href={item.href} />
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </nav>
   );
