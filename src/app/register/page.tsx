@@ -2,12 +2,10 @@
 
 import { FormEvent, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { registerUser } from "@/lib/firebase/registerUser";
 import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [displayName, setDisplayName] = useState("");
   const [institution, setInstitution] = useState("");
   const [email, setEmail] = useState("");
@@ -53,8 +51,6 @@ export default function RegisterPage() {
 
     if (result.success) {
       setSuccess(true);
-      // Redirect to dashboard after a brief moment so the user sees the message.
-      setTimeout(() => router.replace("/dashboard"), 2000);
     } else {
       setError(result.message);
     }
@@ -72,7 +68,17 @@ export default function RegisterPage() {
         {success ? (
           <div className="mt-8 rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-sm text-green-800">
             <p className="font-semibold">Account created successfully.</p>
-            <p className="mt-1">Your membership request is pending review. Redirecting you to the portal\u2026</p>
+            <p className="mt-1">
+              Your account has been created and is pending membership review. Access will become available after approval.
+            </p>
+            <div className="mt-3 flex flex-wrap gap-4">
+              <Link href="/login" className="font-semibold text-[#001f3f] underline underline-offset-2">
+                Sign in
+              </Link>
+              <Link href="/" className="font-semibold text-[#001f3f] underline underline-offset-2">
+                Return to public home
+              </Link>
+            </div>
           </div>
         ) : (
           <form className="mt-8 grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
