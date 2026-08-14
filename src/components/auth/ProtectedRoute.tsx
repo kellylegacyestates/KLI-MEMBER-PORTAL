@@ -74,10 +74,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
     if (pathIsProtected && !isAuthenticated) {
       // Unauthenticated — send to login.
-      router.replace("/login");
+      const next = pathname && pathname !== "/login" ? pathname : "/dashboard";
+      router.replace(`/login?redirect=${encodeURIComponent(next)}`);
       return;
     }
-  }, [isAuthenticated, loading, pathIsProtected, router]);
+  }, [isAuthenticated, loading, pathIsProtected, pathname, router]);
 
   // Show a loading indicator while auth + profile resolve for protected paths.
   if (loading && pathIsProtected) {
@@ -127,10 +128,6 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
         </p>
       </div>
     );
-  }
-
-  if (pathIsProtected && !pathIsAdmin && !canAccessMemberRoutes) {
-    return null;
   }
 
   return <>{children}</>;
