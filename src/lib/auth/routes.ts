@@ -29,7 +29,11 @@ const PROTECTED_MEMBER_ROUTES = [
 const PROTECTED_EXECUTIVE_ROUTES = ["/executive"] as const;
 
 export function isPublicPath(pathname: string): boolean {
-  return PUBLIC_ROUTES.has(pathname);
+  return (
+    PUBLIC_ROUTES.has(pathname) ||
+    pathname === "/publications" ||
+    pathname.startsWith("/publications/")
+  );
 }
 
 export function isAdminPath(pathname: string): boolean {

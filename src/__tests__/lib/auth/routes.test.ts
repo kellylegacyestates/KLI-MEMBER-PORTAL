@@ -13,6 +13,10 @@ describe("isPublicPath", () => {
   it("returns true for /verify-email", () => expect(isPublicPath("/verify-email")).toBe(true));
   it("returns true for /access-denied", () => expect(isPublicPath("/access-denied")).toBe(true));
   it("returns true for /", () => expect(isPublicPath("/")).toBe(true));
+  it("returns true for public publication routes", () => {
+    expect(isPublicPath("/publications")).toBe(true);
+    expect(isPublicPath("/publications/example-record")).toBe(true);
+  });
   it("returns false for /dashboard", () => expect(isPublicPath("/dashboard")).toBe(false));
   it("returns false for /admin", () => expect(isPublicPath("/admin")).toBe(false));
 });
@@ -45,6 +49,8 @@ describe("isProtectedPath", () => {
     expect(isProtectedPath("/verify-email")).toBe(false);
     expect(isProtectedPath("/access-denied")).toBe(false);
     expect(isProtectedPath("/")).toBe(false);
+    expect(isProtectedPath("/publications")).toBe(false);
+    expect(isProtectedPath("/publications/example-record")).toBe(false);
   });
 
   it("returns true for member routes", () => {

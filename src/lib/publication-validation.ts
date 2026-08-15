@@ -214,3 +214,14 @@ export function normalizePublicationRecord(
 export function filterPublications(records: PublicationRecord[]): PublicationRecord[] {
   return records.filter((record) => record.visibility === "public");
 }
+
+export function getValidPublicFileUrl(record: PublicationRecord): string | null {
+  const current = getCurrentPublicationVersion(record);
+  if (!current?.public || !current.fileUrl) return null;
+  try {
+    const url = new URL(current.fileUrl);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
