@@ -77,7 +77,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   // Authenticated member on an executive path without executive role — deny access.
-  if (pathIsExecutive && isAuthenticated && !canAccessExecutiveRoutes) {
+  // (Only reached when membership is active; inactive-membership check fires first.)
+  if (pathIsExecutive && isAuthenticated && hasActiveMembership && !canAccessExecutiveRoutes) {
     return (
       <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-center">
         <p className="text-sm font-semibold text-[#001f3f]">Executive access required</p>
