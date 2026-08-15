@@ -52,6 +52,15 @@ export async function POST(request: NextRequest) {
     const auth = getFirebaseAdminAuth();
     const decodedToken = await auth.verifyIdToken(idToken, true);
 
+    if (decodedToken.email_verified !== true) {
+      const response = NextResponse.json(
+        { ok: false, error: "email_verification_required" },
+        { status: 403 }
+      );
+      clearSessionCookie(response);
+      return response;
+    }
+
     const authTimeMs = decodedToken.auth_time ? decodedToken.auth_time * 1000 : 0;
     if (!authTimeMs || Date.now() - authTimeMs > RECENT_SIGN_IN_WINDOW_MS) {
       const response = NextResponse.json({ ok: false }, { status: 401 });

@@ -37,6 +37,7 @@ describe("POST /api/auth/session rate limiting", () => {
       verifyIdToken: vi.fn().mockResolvedValue({
         uid: "member-1",
         auth_time: Math.floor(Date.now() / 1000),
+        email_verified: true,
       }),
       createSessionCookie: vi.fn().mockResolvedValue("session-cookie"),
     } as never);
@@ -69,5 +70,27 @@ describe("POST /api/auth/session rate limiting", () => {
 
     expect((await POST(request())).status).toBe(429);
     expect((await POST(request())).status).toBe(200);
+  });
+
+  it("refuses to create a session for an unverified email", async () => {
+    const createSessionCookie = vi.fn();
+    mockGetAuth.mockReturnValue({
+      verifyIdToken: vi.fn().mockResolvedValue({
+        uid: "member-1",
+        auth_time: Math.floor(Date.now() / 1000),
+        email_verified: false,
+      }),
+      createSessionCookie,
+    } as never);
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({
+      ok: false,
+      error: "email_verification_required",
+    });
+    expect(createSessionCookie).not.toHaveBeenCalled();
+    expect(response.headers.get("set-cookie")).toContain("__session=;");
   });
 });

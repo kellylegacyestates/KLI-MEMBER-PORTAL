@@ -87,6 +87,19 @@ export function LoginForm() {
               ? `Too many sign-in attempts. Please wait ${retryAfter} seconds and try again.`
               : "Too many sign-in attempts. Please wait a moment and try again."
           );
+        } else if (sessionResponse.status === 403) {
+          let errorCode = "";
+          try {
+            const body = (await sessionResponse.json()) as { error?: unknown };
+            errorCode = typeof body.error === "string" ? body.error : "";
+          } catch {
+            // Use the generic sign-in error when the response is not valid JSON.
+          }
+          setError(
+            errorCode === "email_verification_required"
+              ? "Please verify your email address before signing in."
+              : "We could not complete your sign-in. Please try again."
+          );
         } else {
           setError("We could not complete your sign-in. Please try again.");
         }

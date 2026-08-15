@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "provision:admins": "node scripts/provision-admins.mjs"
   },
   "dependencies": {
     "firebase": "^12.17.1",
