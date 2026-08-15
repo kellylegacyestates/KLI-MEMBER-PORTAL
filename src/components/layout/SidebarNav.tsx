@@ -1,13 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { NavLink } from "./NavLink";
 import {
   adminNavigation,
   executiveNavigation,
   isNavigationItemActive,
   primaryNavigation,
-  type NavigationItem,
 } from "./navigation";
 import type { UserRole } from "@/lib/firebase/userProfile";
 
@@ -15,36 +14,13 @@ type SidebarNavProps = {
   role?: UserRole | null;
 };
 
-function NavItem({ item, pathname, inverse = false }: { item: NavigationItem; pathname: string; inverse?: boolean }) {
-  const isActive = isNavigationItemActive(pathname, item);
-  return (
-    <li>
-      <Link
-        href={item.href}
-        aria-current={isActive ? "page" : undefined}
-        className={`flex min-h-11 items-center rounded-2xl px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2 ${
-          inverse
-            ? isActive
-              ? "bg-white/15 text-white"
-              : "text-[#f5f1de] hover:bg-white/10"
-            : isActive
-              ? "bg-[#f5f1de] text-[#001f3f]"
-              : "text-[#243449] hover:bg-[#f5f1de] hover:text-[#001f3f]"
-        }`}
-      >
-        {item.label}
-      </Link>
-    </li>
-  );
-}
-
 export function SidebarNav({ role }: SidebarNavProps) {
   const pathname = usePathname();
   const isExecutive = role === "executive" || role === "admin";
   const isAdmin = role === "admin";
 
   return (
-    <nav className="h-full border-r border-[#d8d0bc] bg-[#f8f6ee] p-4 lg:p-6">
+    <nav aria-label="Portal navigation" className="h-full border-r border-[#d8d0bc] bg-[#f8f6ee] p-4 lg:p-6">
       <div className="rounded-[1.5rem] border border-[#d8d0bc] bg-white/80 p-4 shadow-sm">
         <div className="rounded-2xl border border-[#d8d0bc] bg-[#f8f6ee] p-3">
           <p className="text-[0.66rem] font-semibold uppercase tracking-[0.35em] text-[#d4af37]">
@@ -63,7 +39,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
                 </summary>
                 <ul className="mt-1 space-y-1 border-l border-[#d8d0bc] pl-2">
                   {group.items.map((item) => (
-                    <NavItem key={item.href} item={item} pathname={pathname} />
+                    <NavLink key={item.href} item={item} pathname={pathname} />
                   ))}
                 </ul>
               </details>
@@ -79,7 +55,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
             </p>
             <ul className="mt-3 space-y-1">
               {executiveNavigation.map((item) => (
-                <NavItem key={item.href} item={item} pathname={pathname} />
+                <NavLink key={item.href} item={item} pathname={pathname} />
               ))}
             </ul>
           </div>
@@ -93,7 +69,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
             </p>
             <ul className="mt-3 space-y-1">
               {adminNavigation.map((item) => (
-                <NavItem key={item.href} item={item} pathname={pathname} inverse />
+                <NavLink key={item.href} item={item} pathname={pathname} inverse />
               ))}
             </ul>
           </div>

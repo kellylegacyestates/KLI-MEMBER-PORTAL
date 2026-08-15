@@ -77,3 +77,53 @@ export function isNavigationItemActive(pathname: string, item: NavigationItem) {
     ? pathname === item.href
     : pathname === item.href || pathname.startsWith(`${item.href}/`);
 }
+
+const memberJourney: NavigationItem[] = [
+  { label: "Courses", href: "/courses" },
+  { label: "Curriculum", href: "/curriculum" },
+  { label: "Research Library", href: "/research-library" },
+  { label: "Publications", href: "/publications" },
+  { label: "Weekly Briefings", href: "/briefings" },
+  { label: "Downloads", href: "/downloads" },
+  { label: "Certificates", href: "/certificates" },
+  { label: "Notes", href: "/notes" },
+  { label: "Profile", href: "/profile" },
+];
+
+export type ContextualNavigation = {
+  overview: NavigationItem;
+  previous?: NavigationItem;
+  next?: NavigationItem;
+};
+
+export function getNavigationLabel(pathname: string): string | null {
+  const items = [
+    ...primaryNavigation.flatMap((group) => group.items),
+    ...executiveNavigation,
+    ...adminNavigation,
+  ];
+  return items
+    .filter((item) => isNavigationItemActive(pathname, item))
+    .sort((left, right) => right.href.length - left.href.length)[0]?.label ?? null;
+}
+
+export function getContextualNavigation(pathname: string): ContextualNavigation | null {
+  const journey = pathname.startsWith("/admin")
+    ? adminNavigation
+    : pathname.startsWith("/executive")
+      ? executiveNavigation
+      : memberJourney;
+  const currentIndex = journey.findIndex((item) => item.href === pathname);
+
+  if (currentIndex < 0) return null;
+
+  return {
+    overview: pathname.startsWith("/admin")
+      ? { label: "Admin Overview", href: "/admin" }
+      : pathname.startsWith("/executive")
+        ? { label: "Executive Overview", href: "/executive" }
+        : { label: "Dashboard", href: "/dashboard" },
+    previous: journey[currentIndex - 1],
+    next: journey[currentIndex + 1],
+  };
+}

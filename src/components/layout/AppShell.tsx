@@ -4,6 +4,10 @@ import { useCallback, useState } from "react";
 import { InstitutionalFooter } from "./InstitutionalFooter";
 import { InstitutionalHeader } from "./InstitutionalHeader";
 import { MobileNav } from "./MobileNav";
+import {
+  PortalBreadcrumbs,
+  PortalContextualNavigation,
+} from "./PortalRouteNavigation";
 import { SidebarNav } from "./SidebarNav";
 import type { MembershipStatus, UserRole } from "@/lib/firebase/userProfile";
 
@@ -50,7 +54,9 @@ export function AppShell({ children, profileData }: AppShellProps) {
 
         <main id="main-content" tabIndex={-1} className="flex-1 bg-[#f8f6ee] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
           <div className="rounded-[2rem] border border-[#d8d0bc] bg-white/90 p-5 shadow-[0_18px_70px_rgba(0,31,63,0.05)] sm:p-8 lg:p-10">
+            <PortalBreadcrumbs />
             {children}
+            <PortalContextualNavigation />
           </div>
         </main>
       </div>
