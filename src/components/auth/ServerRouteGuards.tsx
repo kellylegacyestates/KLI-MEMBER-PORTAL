@@ -74,9 +74,9 @@ function renderMemberDenied(
     );
   }
 
-  const profile: ResolvedUserProfile = result.profile;
-
   if (result.kind === "inactive-account") {
+    const profile: ResolvedUserProfile = result.profile;
+
     if (profile.accountStatus === "revoked") {
       return (
         <AccessCard
@@ -95,6 +95,8 @@ function renderMemberDenied(
       />
     );
   }
+
+  const profile: ResolvedUserProfile = result.profile;
 
   if (profile.membershipStatus === "pending") {
     return (
