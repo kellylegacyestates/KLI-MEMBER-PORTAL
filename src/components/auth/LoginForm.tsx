@@ -37,6 +37,8 @@ export function LoginForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const redirectTarget = searchParams.get("redirect") || "/dashboard";
+  const sessionExpired = searchParams.get("reason") === "session-expired";
+  const signedOutEverywhere = searchParams.get("signedOut") === "all";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -78,7 +80,16 @@ export function LoginForm() {
           // Best-effort cleanup; the user should not keep a client-only login.
         }
 
-        setError("We could not complete your sign-in. Please try again.");
+        if (sessionResponse.status === 429) {
+          const retryAfter = Number(sessionResponse.headers.get("retry-after"));
+          setError(
+            Number.isFinite(retryAfter) && retryAfter > 0
+              ? `Too many sign-in attempts. Please wait ${retryAfter} seconds and try again.`
+              : "Too many sign-in attempts. Please wait a moment and try again."
+          );
+        } else {
+          setError("We could not complete your sign-in. Please try again.");
+        }
         return;
       }
 
@@ -99,6 +110,16 @@ export function LoginForm() {
   return (
     <section className="rounded-[2rem] border border-[#d8d0bc] bg-white p-8 shadow-sm sm:p-10">
       <h2 className="text-2xl font-semibold text-[#001f3f]">Member sign-in</h2>
+      {sessionExpired ? (
+        <p role="status" className="mt-4 rounded-2xl border border-[#d4af37] bg-[#fffbed] px-4 py-3 text-sm text-[#243449]">
+          Your session expired or was revoked. Sign in again to continue.
+        </p>
+      ) : null}
+      {signedOutEverywhere ? (
+        <p role="status" className="mt-4 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">
+          You have been signed out on all devices.
+        </p>
+      ) : null}
       <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
         <div>
           <label htmlFor="email" className="mb-2 block text-sm font-medium text-[#001f3f]">

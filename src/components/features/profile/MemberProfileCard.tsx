@@ -7,6 +7,7 @@ import { LoadingState } from "@/components/ui/LoadingState";
 import { db } from "@/lib/firebase/client";
 import { updateUserProfile, type ResolvedUserProfile } from "@/lib/firebase/userProfile";
 import type { User } from "firebase/auth";
+import { SignOutAllDevices } from "@/components/features/profile/SignOutAllDevices";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -143,6 +144,7 @@ function ProfileForm({ user, profile, refreshProfile }: ProfileFormProps) {
               tone={roleTone(profile.role)}
             />
           </div>
+          <SignOutAllDevices />
         </div>
         <div className="mt-4 border-t border-[#f5f1de]/20 pt-4 text-[0.75rem] text-[#c5bfa8]">
           Member since {joinDate}
@@ -256,4 +258,3 @@ export function MemberProfileCard() {
   // signed-in identity ever changes within the same session.
   return <ProfileForm key={profile.uid} user={user} profile={profile} refreshProfile={refreshProfile} />;
 }
-
