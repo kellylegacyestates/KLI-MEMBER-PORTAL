@@ -64,13 +64,12 @@ export async function POST(request: NextRequest) {
       reason: "User requested sign out on all devices.",
       outcome: "success",
     });
-
-    const response = NextResponse.json({ ok: true });
-    clearSessionCookie(response);
-    return response;
   } catch {
-    const response = NextResponse.json({ ok: false }, { status: 500 });
-    clearSessionCookie(response);
-    return response;
+    // Revocation already succeeded; do not report the security action as failed.
+    console.error("Session revocation succeeded, but its audit event could not be recorded.");
   }
+
+  const response = NextResponse.json({ ok: true });
+  clearSessionCookie(response);
+  return response;
 }

@@ -60,10 +60,15 @@ export async function consumeSessionRateLimit(
       };
     }
 
-    transaction.update(ref, {
-      count: storedCount + 1,
-      updatedAt: FieldValue.serverTimestamp(),
-    });
+    transaction.set(
+      ref,
+      {
+        count: storedCount + 1,
+        windowStartedAt: storedStart,
+        updatedAt: FieldValue.serverTimestamp(),
+      },
+      { merge: true }
+    );
     return { allowed: true };
   });
 }

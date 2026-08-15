@@ -74,8 +74,9 @@ export async function POST(request: NextRequest) {
       reason,
       outcome: "success",
     });
-    return NextResponse.json({ ok: true });
   } catch {
-    return NextResponse.json({ ok: false }, { status: 500 });
+    // Revocation already succeeded; do not report the security action as failed.
+    console.error("Session revocation succeeded, but its audit event could not be recorded.");
   }
+  return NextResponse.json({ ok: true });
 }
