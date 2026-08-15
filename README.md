@@ -331,6 +331,25 @@ Manual prerequisites in the Firebase console:
    and read/write `users` and `auditEvents` in Firestore.
 4. Run the dry-run, apply once, then run the dry-run again and confirm zero changes.
 
+### Privileged authorization changes
+
+Protected `role`, `accountStatus`, and `membershipStatus` changes must use the
+trusted **Admin → Access** workflow or another approved server-side
+administrative tool. The `POST /api/admin/users/authorization` route validates
+the active administrator and target profile, then commits the protected-field
+update and its `user.authorization.update` audit event in one Firestore
+transaction.
+
+Audit records are append-only and server-only. Browser access to `auditEvents`
+remains denied by Firestore rules. Access-reducing changes are committed before
+Firebase refresh tokens are revoked; if revocation fails, the authorization
+change remains successful, the API reports partial success, and a revocation
+failure audit event is attempted for operational follow-up.
+
+Manual Firebase Console edits bypass application-level audit logging and are
+exceptional break-glass administration only. Document and independently review
+any such intervention.
+
 ### Privacy
 - Members can only access their own data
 - Subscription status controls content access
