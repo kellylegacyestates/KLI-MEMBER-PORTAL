@@ -108,19 +108,22 @@ export function getNavigationLabel(pathname: string): string | null {
 }
 
 export function getContextualNavigation(pathname: string): ContextualNavigation | null {
-  const journey = pathname.startsWith("/admin")
+  const normalizedPathname = pathname.length > 1
+    ? pathname.replace(/\/+$/, "")
+    : pathname;
+  const journey = normalizedPathname.startsWith("/admin")
     ? adminNavigation
-    : pathname.startsWith("/executive")
+    : normalizedPathname.startsWith("/executive")
       ? executiveNavigation
       : memberJourney;
-  const currentIndex = journey.findIndex((item) => item.href === pathname);
+  const currentIndex = journey.findIndex((item) => item.href === normalizedPathname);
 
   if (currentIndex < 0) return null;
 
   return {
-    overview: pathname.startsWith("/admin")
+    overview: normalizedPathname.startsWith("/admin")
       ? { label: "Admin Overview", href: "/admin" }
-      : pathname.startsWith("/executive")
+      : normalizedPathname.startsWith("/executive")
         ? { label: "Executive Overview", href: "/executive" }
         : { label: "Dashboard", href: "/dashboard" },
     previous: journey[currentIndex - 1],

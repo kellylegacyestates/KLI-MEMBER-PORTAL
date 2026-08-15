@@ -41,4 +41,11 @@ describe("portal navigation", () => {
     expect(getContextualNavigation("/dashboard")).toBeNull();
     expect(getContextualNavigation("/admin/publications/record-1")).toBeNull();
   });
+
+  it("handles trailing slashes consistently", () => {
+    expect(getContextualNavigation("/briefings/")?.next).toEqual({
+      label: "Downloads",
+      href: "/downloads",
+    });
+  });
 });
