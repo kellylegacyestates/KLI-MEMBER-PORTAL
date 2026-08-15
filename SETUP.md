@@ -1,5 +1,7 @@
 # KLI Member Portal - Development Setup Guide
 
+> **Current auth stack:** The live application now uses Firebase Authentication, Firestore, and Firebase Admin session cookies. Older Supabase references below are legacy notes and should not be used for current auth setup.
+
 ## Prerequisites
 
 - **Node.js**: v20.x or higher
@@ -29,25 +31,37 @@ pnpm install
 Create `.env.local` in the project root:
 
 ```env
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=https://[project-ref].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[your-anon-key]
-SUPABASE_SERVICE_ROLE_KEY=[your-service-role-key]
+# Firebase Web SDK (browser-visible)
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
 
-# Stripe
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=[your-publishable-key]
-STRIPE_SECRET_KEY=[your-secret-key]
-STRIPE_WEBHOOK_SECRET=[your-webhook-secret]
+# Firebase Admin SDK (server-only)
+# Option A: Firebase App Hosting / Google Cloud Application Default Credentials
+#   - Configure the workload identity/service account in the hosting environment
+#   - Set FIREBASE_ADMIN_PROJECT_ID (or ensure the platform project ID is present)
+FIREBASE_ADMIN_PROJECT_ID=
 
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NODE_ENV=development
-
-# Email (optional - for future phases)
-SENDGRID_API_KEY=
+# Option B: Explicit service-account secrets for non-ADC environments
+FIREBASE_ADMIN_CLIENT_EMAIL=
+FIREBASE_ADMIN_PRIVATE_KEY=
 ```
 
 For production/staging, create `.env.production.local` or `.env.staging.local`.
+
+#### 3a. Firebase Admin session-cookie configuration
+
+- The server now issues a trusted HTTP-only session cookie named `__session`.
+- Never place Admin credentials in `NEXT_PUBLIC_*` variables.
+- Never commit service-account JSON files or private keys to Git.
+- For local development, either:
+  - authenticate Application Default Credentials with Google Cloud tooling, or
+  - provide `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, and `FIREBASE_ADMIN_PRIVATE_KEY` in `.env.local`.
+- For `FIREBASE_ADMIN_PRIVATE_KEY`, keep embedded newlines escaped as `\n` in the environment variable.
+- In Firebase App Hosting, prefer runtime identity / Application Default Credentials when available. If explicit secrets are required, store them in Secret Manager and expose them only at runtime.
 
 ### 4. Supabase Project Setup
 
@@ -472,4 +486,3 @@ For issues or questions:
 2. Review documentation files
 3. Check GitHub Issues
 4. Create a new issue with detailed description
-

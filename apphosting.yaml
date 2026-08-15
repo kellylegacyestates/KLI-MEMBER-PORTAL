@@ -11,14 +11,15 @@ runConfig:
 # env:
   # Configure environment variables.
   # See https://firebase.google.com/docs/app-hosting/configure#user-defined-environment
-  # - variable: MESSAGE
-  #   value: Hello world!
+  # - variable: FIREBASE_ADMIN_PROJECT_ID
+  #   value: your_project_id
   #   availability:
-  #     - BUILD
   #     - RUNTIME
 
   # Grant access to secrets in Cloud Secret Manager.
   # You can create secrets with the CLI command `firebase apphosting:secrets:set <secretName>`.
   # See https://firebase.google.com/docs/app-hosting/configure#secret-parameters
-  # - variable: MY_SECRET
-  #   secret: mySecretRef
+  # - variable: FIREBASE_ADMIN_CLIENT_EMAIL
+  #   secret: firebaseAdminClientEmail
+  # - variable: FIREBASE_ADMIN_PRIVATE_KEY
+  #   secret: firebaseAdminPrivateKey

@@ -14,11 +14,10 @@ The KLI Member Portal is a professional, secure platform for delivering the Fidu
 ## Features
 
 ### Authentication & Access Control
-- ✅ Secure email/password authentication via Supabase Auth
-- ✅ Email verification and password reset
-- ✅ Protected routes with role-based access
-- ✅ Stripe subscription integration
-- ✅ Role-based authorization (member, moderator, admin)
+- ✅ Secure Firebase Authentication sign-in and password recovery
+- ✅ Trusted server-side session cookies via Firebase Admin SDK
+- ✅ Protected member and admin routes with server-side access enforcement
+- ✅ Role-based authorization (member, instructor, admin)
 
 ### Member Dashboard
 - 📊 Personal dashboard with welcome screen
@@ -86,13 +85,12 @@ Each module includes:
 
 | Layer | Technology |
 |-------|-----------|
-| **Frontend** | Next.js 15 (App Router), React 19, TypeScript |
+| **Frontend** | Next.js 16 (App Router), React 19, TypeScript |
 | **Styling** | Tailwind CSS with custom design system |
 | **Backend** | Next.js API Routes (serverless) |
-| **Database** | Supabase PostgreSQL with Row Level Security |
-| **Authentication** | Supabase Auth (email/password, JWT) |
-| **Payments** | Stripe (subscriptions, webhooks) |
-| **Deployment** | Vercel (with auto-scaling) |
+| **Database** | Firestore |
+| **Authentication** | Firebase Auth + Firebase Admin session cookies |
+| **Deployment** | Firebase App Hosting / Node runtime |
 | **Package Manager** | pnpm |
 
 ## Design Language
@@ -133,7 +131,7 @@ The platform embodies institutional credibility and academic prestige:
 3. **Configure environment**
    ```bash
    cp .env.example .env.local
-   # Edit .env.local with your Supabase and Stripe credentials
+   # Edit .env.local with your Firebase Web config and server-only Admin settings
    ```
 
 4. **Set up database**

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AppShell } from "@/components/layout/AppShell";
+import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Curriculum Manager",
@@ -14,13 +15,15 @@ const rows = [
   { module: "Administrative Procedure", status: "Published", updated: "4 days ago" },
 ];
 
-export default function AdminCurriculumPage() {
+export default async function AdminCurriculumPage() {
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Curriculum Manager" description="Oversee curriculum modules and publication readiness for the member experience." />
-        <DataTable title="Curriculum inventory" columns={[{ key: "module", header: "Module" }, { key: "status", header: "Status" }, { key: "updated", header: "Updated" }]} rows={rows} />
-      </div>
-    </AppShell>
+    <AdminRouteGuard pathname="/admin/curriculum">
+      <AppShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Curriculum Manager" description="Oversee curriculum modules and publication readiness for the member experience." />
+          <DataTable title="Curriculum inventory" columns={[{ key: "module", header: "Module" }, { key: "status", header: "Status" }, { key: "updated", header: "Updated" }]} rows={rows} />
+        </div>
+      </AppShell>
+    </AdminRouteGuard>
   );
 }
