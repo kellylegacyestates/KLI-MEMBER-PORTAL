@@ -49,9 +49,7 @@ export async function POST(request: NextRequest) {
     } catch {
       // The response remains closed when both the operation and audit sink fail.
     }
-    const response = NextResponse.json({ ok: false }, { status: 500 });
-    clearSessionCookie(response);
-    return response;
+    return NextResponse.json({ ok: false }, { status: 500 });
   }
 
   try {

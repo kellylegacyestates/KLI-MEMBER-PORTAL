@@ -24,7 +24,11 @@ export function SignOutAllDevices() {
         return;
       }
       if (auth) {
-        await signOut(auth);
+        try {
+          await signOut(auth);
+        } catch {
+          // Server-side revocation succeeded; continue to the sign-in screen.
+        }
       }
       router.replace("/login?signedOut=all");
     } catch {

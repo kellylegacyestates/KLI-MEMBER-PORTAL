@@ -125,4 +125,20 @@ describe("self-service all-device sign out", () => {
     expect(revokeRefreshTokens).not.toHaveBeenCalled();
     expect(response.headers.get("set-cookie")).toContain("__session=");
   });
+
+  it("keeps the current cookie when token revocation fails so the user can retry", async () => {
+    const verifySessionCookie = vi.fn().mockResolvedValue({ uid: "member-1" });
+    const revokeRefreshTokens = vi.fn().mockRejectedValue(new Error("unavailable"));
+    mockGetAuth.mockReturnValue({
+      verifySessionCookie,
+      revokeRefreshTokens,
+    } as never);
+
+    const response = await revokeOwnSessions(
+      post("/api/auth/logout-all", undefined, "valid-session")
+    );
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("set-cookie")).toBeNull();
+  });
 });
