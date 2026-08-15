@@ -7,14 +7,17 @@ export function SessionRevocationForm() {
   const [reason, setReason] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
 
   async function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!confirmed) return;
 
     setSubmitting(true);
-    setMessage("");
+    setMessage(null);
     try {
       const response = await fetch("/api/admin/users/revoke-sessions", {
         method: "POST",
@@ -24,16 +27,25 @@ export function SessionRevocationForm() {
       });
 
       if (!response.ok) {
-        setMessage("Sessions could not be revoked. Verify the user ID and try again.");
+        setMessage({
+          tone: "error",
+          text: "Sessions could not be revoked. Verify the user ID and try again.",
+        });
         return;
       }
 
-      setMessage("All sessions for this user have been revoked.");
+      setMessage({
+        tone: "success",
+        text: "All sessions for this user have been revoked.",
+      });
       setTargetUid("");
       setReason("");
       setConfirmed(false);
     } catch {
-      setMessage("Sessions could not be revoked. Please try again.");
+      setMessage({
+        tone: "error",
+        text: "Sessions could not be revoked. Please try again.",
+      });
     } finally {
       setSubmitting(false);
     }
@@ -87,7 +99,14 @@ export function SessionRevocationForm() {
         >
           {submitting ? "Revoking…" : "Revoke all sessions"}
         </button>
-        {message ? <p role="status" className="text-sm text-[#243449]">{message}</p> : null}
+        {message ? (
+          <p
+            role={message.tone === "error" ? "alert" : "status"}
+            className={message.tone === "error" ? "text-sm text-red-600" : "text-sm text-green-700"}
+          >
+            {message.text}
+          </p>
+        ) : null}
       </div>
     </form>
   );

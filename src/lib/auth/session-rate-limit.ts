@@ -21,8 +21,7 @@ export type SessionRateLimitResult =
 function clientKey(request: NextRequest) {
   const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
   const address = forwardedFor || request.headers.get("x-real-ip")?.trim() || "unknown";
-  const userAgent = request.headers.get("user-agent")?.slice(0, 256) || "unknown";
-  return createHash("sha256").update(`${address}\n${userAgent}`).digest("hex");
+  return createHash("sha256").update(address).digest("hex");
 }
 
 export async function consumeSessionRateLimit(
