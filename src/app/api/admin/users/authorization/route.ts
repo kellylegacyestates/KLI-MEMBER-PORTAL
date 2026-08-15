@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
 
   let uid = "";
   let reason = "";
-  let updates: AuthorizationUpdate = {};
+  const updates: AuthorizationUpdate = {};
 
   try {
     const body = (await request.json()) as Record<string, unknown>;
