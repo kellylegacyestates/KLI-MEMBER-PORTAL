@@ -296,6 +296,41 @@ kli-member-portal/
   rules deny browser reads and writes; support staff should use trusted
   administrative tooling when investigating these records.
 
+### Administrative account provisioning
+
+Administrative access is provisioned by immutable Firebase Authentication UID.
+The provisioning command never creates identities or passwords. Before any write,
+it requires every configured identity to already exist in Firebase Authentication
+and to have a verified email address. Profile updates use merge semantics, and each
+authorization change creates an append-only `auditEvents` record in the same batch.
+
+Run this only from a trusted administrator workstation or Cloud Shell with
+Application Default Credentials authorized for the `legacy-ai-production` project:
+
+```bash
+export FIREBASE_ADMIN_PROJECT_ID="legacy-ai-production"
+export ADMIN_PROVISIONING_EMAILS="office@kellylegacyestates.com,kellylegacyestatesllc@gmail.com"
+
+# Mandatory preview; performs no Firestore writes.
+corepack pnpm provision:admins --dry-run
+
+# Apply only after reviewing the dry-run result.
+corepack pnpm provision:admins
+```
+
+`ADMIN_PROVISIONING_EMAILS` is server-only and must never use a `NEXT_PUBLIC_`
+prefix or be added to browser/App Hosting build variables. Authenticate ADC
+without storing credentials in the repository (for example, use the authenticated
+Cloud Shell session for the target project).
+
+Manual prerequisites in the Firebase console:
+
+1. Confirm both email/password identities already exist in Authentication.
+2. Confirm each identity's email is verified; do not create or reset passwords.
+3. Confirm the operator's runtime identity can read Firebase Authentication users
+   and read/write `users` and `auditEvents` in Firestore.
+4. Run the dry-run, apply once, then run the dry-run again and confirm zero changes.
+
 ### Privacy
 - Members can only access their own data
 - Subscription status controls content access
