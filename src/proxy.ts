@@ -36,7 +36,6 @@ export const config = {
     "/profile/:path*",
     "/account/:path*",
     "/library/:path*",
-    "/publications/:path*",
     "/research-library/:path*",
     "/standing-ledger/:path*",
     "/support/:path*",

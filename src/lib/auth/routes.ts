@@ -5,6 +5,7 @@ const PUBLIC_ROUTES = new Set([
   "/forgot-password",
   "/verify-email",
   "/access-denied",
+  "/publications",
 ]);
 
 const PROTECTED_MEMBER_ROUTES = [
@@ -20,7 +21,6 @@ const PROTECTED_MEMBER_ROUTES = [
   "/profile",
   "/account",
   "/library",
-  "/publications",
   "/research-library",
   "/standing-ledger",
   "/support",
