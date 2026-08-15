@@ -15,16 +15,20 @@ const accessSections = [
     description: "Assign and review member roles including member, instructor, executive, and admin.",
   },
   {
+    title: "Account Status",
+    description: "Review account eligibility using controlled states: active, suspended, or revoked.",
+  },
+  {
     title: "Membership Status",
-    description: "Review and update membership status: active, pending, suspended, expired, or revoked.",
+    description: "Review educational membership eligibility: active, pending, suspended, expired, or revoked.",
   },
   {
     title: "Session Management",
-    description: "Review active sessions and revoke tokens when required.",
+    description: "Current-session logout is implemented; global revocation and sign-out-all-devices remain deferred privileged-server work.",
   },
   {
     title: "Access Policies",
-    description: "Configure route-level access policies and permissions.",
+    description: "Route policies are enforced server-side: members require active account plus active membership; admins require active account plus admin role.",
   },
 ];
 

@@ -76,6 +76,26 @@ function renderMemberDenied(
 
   const profile: ResolvedUserProfile = result.profile;
 
+  if (result.kind === "inactive-account") {
+    if (profile.accountStatus === "revoked") {
+      return (
+        <AccessCard
+          title="Account revoked"
+          message="Your account access has been permanently revoked. Please contact support if you believe this is an error."
+          action={<ContactSupportLink />}
+        />
+      );
+    }
+
+    return (
+      <AccessCard
+        title="Account suspended"
+        message="Your account is not eligible for protected access. Please contact support to resolve this matter."
+        action={<ContactSupportLink />}
+      />
+    );
+  }
+
   if (profile.membershipStatus === "pending") {
     return (
       <AccessCard

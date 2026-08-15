@@ -12,7 +12,7 @@ import {
 import type { User } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase/client";
-import { fetchUserProfile, type ResolvedUserProfile, type UserRole, type MembershipStatus } from "@/lib/firebase/userProfile";
+import { fetchUserProfile, type ResolvedUserProfile, type UserRole, type MembershipStatus, type AccountStatus } from "@/lib/firebase/userProfile";
 
 type AuthContextValue = {
   user: User | null;
@@ -20,6 +20,7 @@ type AuthContextValue = {
   loading: boolean;
   isAuthenticated: boolean;
   role: UserRole | null;
+  accountStatus: AccountStatus | null;
   membershipStatus: MembershipStatus | null;
   /** True only when profile.role === "admin".  Fails closed on any ambiguity. */
   isAdmin: boolean;
@@ -37,6 +38,7 @@ const AuthContext = createContext<AuthContextValue>({
   loading: true,
   isAuthenticated: false,
   role: null,
+  accountStatus: null,
   membershipStatus: null,
   isAdmin: false,
   isExecutive: false,
@@ -91,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loading,
       isAuthenticated: Boolean(user),
       role: profile?.role ?? null,
+      accountStatus: profile?.accountStatus ?? null,
       membershipStatus: profile?.membershipStatus ?? null,
       // Fail closed: only true when profile explicitly says "admin".
       isAdmin: profile?.role === "admin",

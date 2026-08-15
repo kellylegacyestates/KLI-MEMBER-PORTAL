@@ -3,6 +3,7 @@
  *
  * Tests cover:
  * - Signed-out access to protected routes (unauthenticated)
+ * - Active, suspended, and revoked account states
  * - Pending, active, suspended, expired, revoked membership states
  * - Member, executive, and admin role access
  * - Member attempting executive access
@@ -124,6 +125,7 @@ function setupNoSession() {
 function profileData(
   role: string,
   membershipStatus: string,
+  accountStatus = "active",
   uid = "test-uid"
 ): DocumentData {
   return {
@@ -133,6 +135,7 @@ function profileData(
     institution: "Test Inst",
     membershipPurpose: "testing",
     role,
+    accountStatus,
     membershipStatus,
   };
 }
@@ -174,6 +177,18 @@ describe("requireActiveMember", () => {
     setupSession("valid-token", fakeClaims("test-uid"), undefined);
     const result = await requireActiveMember();
     expect(result.kind).toBe("missing-profile");
+  });
+
+  it("returns inactive-account for suspended account", async () => {
+    setupSession("valid-token", fakeClaims("test-uid"), profileData("member", "active", "suspended"));
+    const result = await requireActiveMember();
+    expect(result.kind).toBe("inactive-account");
+  });
+
+  it("returns inactive-account for revoked account", async () => {
+    setupSession("valid-token", fakeClaims("test-uid"), profileData("member", "active", "revoked"));
+    const result = await requireActiveMember();
+    expect(result.kind).toBe("inactive-account");
   });
 
   it("returns inactive-membership for pending member", async () => {
@@ -317,10 +332,10 @@ describe("requireAdmin", () => {
     expect(result.kind).toBe("unauthenticated");
   });
 
-  it("returns inactive-membership for pending member", async () => {
+  it("returns forbidden for pending member", async () => {
     setupSession("valid-token", fakeClaims("test-uid"), profileData("member", "pending"));
     const result = await requireAdmin();
-    expect(result.kind).toBe("inactive-membership");
+    expect(result.kind).toBe("forbidden");
   });
 
   it("returns forbidden for active member attempting admin access", async () => {
@@ -335,13 +350,19 @@ describe("requireAdmin", () => {
     expect(result.kind).toBe("forbidden");
   });
 
-  it("returns authorized only for admin role", async () => {
-    setupSession("valid-token", fakeClaims("test-uid"), profileData("admin", "active"));
+  it("returns authorized for admin role without requiring active membership", async () => {
+    setupSession("valid-token", fakeClaims("test-uid"), profileData("admin", "pending"));
     const result = await requireAdmin();
     expect(result.kind).toBe("authorized");
     if (result.kind === "authorized") {
       expect(result.profile.role).toBe("admin");
     }
+  });
+
+  it("returns inactive-account for suspended admin account", async () => {
+    setupSession("valid-token", fakeClaims("test-uid"), profileData("admin", "active", "suspended"));
+    const result = await requireAdmin();
+    expect(result.kind).toBe("inactive-account");
   });
 
   it("does not grant admin access to tampered client role — server loads from Firestore", async () => {
