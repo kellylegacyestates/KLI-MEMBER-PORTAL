@@ -40,24 +40,37 @@ export function InstitutionalHeader({ onMenuToggle, isMenuOpen, profileData }: I
 
   return (
     <header className="border-b border-[#d8d0bc] bg-[#001f3f] text-white">
-      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d4af37] bg-[#d4af37]/10 text-sm font-semibold tracking-[0.2em] text-[#f5f1de]">
-            KLI
+      <div className="mx-auto grid max-w-7xl gap-4 px-4 py-4 sm:px-6 lg:grid-cols-[auto_minmax(18rem,1fr)_auto] lg:items-center lg:px-8">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-full border border-[#d4af37] bg-[#d4af37]/10 text-sm font-semibold tracking-[0.2em] text-[#f5f1de]">
+              KLI
+            </div>
+            <div>
+              <p className="text-[0.65rem] uppercase tracking-[0.35em] text-[#d4af37]">
+                Kelly Legacy Institute
+              </p>
+              <h1 className="text-lg font-semibold text-[#f5f1de]">Member Portal</h1>
+            </div>
           </div>
-          <div>
-            <p className="text-[0.65rem] uppercase tracking-[0.35em] text-[#d4af37]">
-              Kelly Legacy Institute
-            </p>
-            <h1 className="text-lg font-semibold text-[#f5f1de]">Member Portal</h1>
-          </div>
+          <button
+            type="button"
+            onClick={onMenuToggle}
+            className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-[#f5f1de] lg:hidden"
+            aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
+            aria-expanded={isMenuOpen}
+            aria-controls="mobile-navigation"
+          >
+            <span>Menu</span>
+            <span aria-hidden="true" className="text-base">☰</span>
+          </button>
         </div>
 
-        <div className="flex-1 lg:max-w-xl">
+        <div className="min-w-0">
           <GlobalSearch />
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-3 lg:flex">
           {profileData ? (
             <div className="flex items-center gap-3">
               <div className="text-right">
@@ -90,17 +103,6 @@ export function InstitutionalHeader({ onMenuToggle, isMenuOpen, profileData }: I
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={onMenuToggle}
-          className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-[#f5f1de] lg:hidden"
-          aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
-          aria-expanded={isMenuOpen}
-          aria-controls="mobile-navigation"
-        >
-          <span>Menu</span>
-          <span className="text-base">☰</span>
-        </button>
       </div>
     </header>
   );
