@@ -6,7 +6,15 @@ export const metadata: Metadata = {
   title: "Library",
 };
 
-export default async function LibraryPage() {
-  await MemberRouteGuard({ children: null, pathname: "/library" });
+function LibraryRedirect() {
   redirect("/research-library");
+  return null;
+}
+
+export default function LibraryPage() {
+  return (
+    <MemberRouteGuard pathname="/library">
+      <LibraryRedirect />
+    </MemberRouteGuard>
+  );
 }

@@ -96,46 +96,48 @@ function renderMemberDenied(
     );
   }
 
-  const profile: ResolvedUserProfile = result.profile;
+  if (result.kind === "inactive-membership") {
+    const profile: ResolvedUserProfile = result.profile;
 
-  if (profile.membershipStatus === "pending") {
-    return (
-      <AccessCard
-        title="Membership pending"
-        message="Your application is under review. You will receive confirmation once your membership is approved. No action is needed at this time."
-        action={<ContactSupportLink />}
-      />
-    );
-  }
+    if (profile.membershipStatus === "pending") {
+      return (
+        <AccessCard
+          title="Membership pending"
+          message="Your application is under review. You will receive confirmation once your membership is approved. No action is needed at this time."
+          action={<ContactSupportLink />}
+        />
+      );
+    }
 
-  if (profile.membershipStatus === "suspended") {
-    return (
-      <AccessCard
-        title="Membership suspended"
-        message="Your membership has been temporarily suspended. Please contact support to resolve this matter."
-        action={<ContactSupportLink />}
-      />
-    );
-  }
+    if (profile.membershipStatus === "suspended") {
+      return (
+        <AccessCard
+          title="Membership suspended"
+          message="Your membership has been temporarily suspended. Please contact support to resolve this matter."
+          action={<ContactSupportLink />}
+        />
+      );
+    }
 
-  if (profile.membershipStatus === "expired") {
-    return (
-      <AccessCard
-        title="Membership expired"
-        message="Your membership term has lapsed. Please renew your membership to restore access."
-        action={<ContactSupportLink />}
-      />
-    );
-  }
+    if (profile.membershipStatus === "expired") {
+      return (
+        <AccessCard
+          title="Membership expired"
+          message="Your membership term has lapsed. Please renew your membership to restore access."
+          action={<ContactSupportLink />}
+        />
+      );
+    }
 
-  if (profile.membershipStatus === "revoked") {
-    return (
-      <AccessCard
-        title="Access revoked"
-        message="Your membership access has been permanently revoked. Please contact support if you believe this is an error."
-        action={<ContactSupportLink />}
-      />
-    );
+    if (profile.membershipStatus === "revoked") {
+      return (
+        <AccessCard
+          title="Access revoked"
+          message="Your membership access has been permanently revoked. Please contact support if you believe this is an error."
+          action={<ContactSupportLink />}
+        />
+      );
+    }
   }
 
   return (

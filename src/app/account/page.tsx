@@ -6,7 +6,15 @@ export const metadata: Metadata = {
   title: "Account",
 };
 
-export default async function AccountPage() {
-  await MemberRouteGuard({ children: null, pathname: "/account" });
+function AccountRedirect() {
   redirect("/profile");
+  return null;
+}
+
+export default function AccountPage() {
+  return (
+    <MemberRouteGuard pathname="/account">
+      <AccountRedirect />
+    </MemberRouteGuard>
+  );
 }
