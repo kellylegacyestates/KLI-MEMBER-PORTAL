@@ -39,10 +39,9 @@ export default async function ResearchLibraryPage() {
                   <p><span className="font-semibold text-[#001f3f]">Author:</span> {item.author}</p>
                   <p><span className="font-semibold text-[#001f3f]">Publication date:</span> {item.published}</p>
                   <p><span className="font-semibold text-[#001f3f]">Category:</span> {item.category}</p>
-                  <div className="flex flex-wrap gap-3 pt-2">
-                    <button type="button" className="rounded-full border border-[#d8d0bc] bg-[#f8f6ee] px-3 py-2 text-sm font-medium text-[#001f3f]">Bookmark</button>
-                    <button type="button" className="rounded-full bg-[#d4af37] px-3 py-2 text-sm font-semibold text-[#001f3f]">{item.downloadLabel}</button>
-                  </div>
+                  <p className="pt-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#526276]">
+                    {item.downloadLabel} available through member services
+                  </p>
                 </div>
               </InfoCard>
             ))}

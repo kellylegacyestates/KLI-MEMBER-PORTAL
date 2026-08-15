@@ -22,9 +22,7 @@ export default async function BriefingsPage() {
             />
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
               {briefingEntries.map((briefing) => (
-                <InfoCard key={briefing.title} title={briefing.title} description={briefing.summary} meta={briefing.date}>
-                  <button type="button" className="mt-3 rounded-full border border-[#d8d0bc] bg-[#f8f6ee] px-3 py-2 text-sm font-medium text-[#001f3f]">Read More</button>
-                </InfoCard>
+                <InfoCard key={briefing.title} title={briefing.title} description={briefing.summary} meta={briefing.date} />
               ))}
             </div>
           </div>

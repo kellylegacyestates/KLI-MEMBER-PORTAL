@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PortalShell } from "@/components/layout/PortalShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
@@ -13,18 +14,12 @@ const executivePanels = [
   {
     title: "Execution Framework",
     description: "Operational frameworks, fiduciary directives, and institutional execution standards.",
+    href: "/executive/execution-framework",
   },
   {
     title: "Institutional Governance",
     description: "Governance records, policy instruments, and institutional oversight documentation.",
-  },
-  {
-    title: "Strategic Initiatives",
-    description: "Active institutional initiatives, priorities, and leadership directives.",
-  },
-  {
-    title: "Reports and Summaries",
-    description: "Executive-level summaries, performance reports, and institutional assessments.",
+    href: "/executive/institutional-governance",
   },
 ];
 
@@ -44,7 +39,14 @@ export default async function ExecutiveDashboardPage() {
                 key={panel.title}
                 title={panel.title}
                 description={panel.description}
-              />
+              >
+                <Link
+                  href={panel.href}
+                  className="inline-flex min-h-11 items-center text-sm font-semibold text-[#001f3f] underline decoration-[#d4af37] underline-offset-4"
+                >
+                  Open {panel.title} →
+                </Link>
+              </InfoCard>
             ))}
           </div>
         </div>

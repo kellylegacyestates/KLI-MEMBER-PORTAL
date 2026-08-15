@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { logoutUser } from "@/lib/auth/logout";
+import { NavLink } from "./NavLink";
 import {
   adminNavigation,
   executiveNavigation,
   isNavigationItemActive,
   primaryNavigation,
-  type NavigationItem,
 } from "./navigation";
 import type { PortalProfileData } from "./AppShell";
 
@@ -25,41 +25,6 @@ const ROLE_LABELS: Record<string, string> = {
   executive: "Executive",
   admin: "Administrator",
 };
-
-function MobileNavItem({
-  item,
-  pathname,
-  onClose,
-  inverse = false,
-}: {
-  item: NavigationItem;
-  pathname: string;
-  onClose: () => void;
-  inverse?: boolean;
-}) {
-  const isActive = isNavigationItemActive(pathname, item);
-
-  return (
-    <li>
-      <Link
-        href={item.href}
-        onClick={onClose}
-        aria-current={isActive ? "page" : undefined}
-        className={`flex min-h-11 items-center rounded-2xl px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${
-          inverse
-            ? isActive
-              ? "bg-white/15 text-white"
-              : "text-[#f5f1de] hover:bg-white/10"
-            : isActive
-              ? "bg-[#f5f1de] text-[#001f3f]"
-              : "text-[#243449] hover:bg-[#f5f1de] hover:text-[#001f3f]"
-        }`}
-      >
-        {item.label}
-      </Link>
-    </li>
-  );
-}
 
 export function MobileNav({ isOpen, onClose, profileData }: MobileNavProps) {
   const pathname = usePathname();
@@ -206,7 +171,7 @@ export function MobileNav({ isOpen, onClose, profileData }: MobileNavProps) {
                   </summary>
                   <ul className="space-y-1 border-t border-[#e7e1d3] p-2">
                     {group.items.map((item) => (
-                      <MobileNavItem key={item.href} item={item} pathname={pathname} onClose={onClose} />
+                      <NavLink key={item.href} item={item} pathname={pathname} onClick={onClose} />
                     ))}
                   </ul>
                 </details>
@@ -221,7 +186,7 @@ export function MobileNav({ isOpen, onClose, profileData }: MobileNavProps) {
                 </summary>
                 <ul className="space-y-1 border-t border-[#d8d0bc] p-2">
                   {executiveNavigation.map((item) => (
-                    <MobileNavItem key={item.href} item={item} pathname={pathname} onClose={onClose} />
+                    <NavLink key={item.href} item={item} pathname={pathname} onClick={onClose} />
                   ))}
                 </ul>
               </details>
@@ -230,12 +195,12 @@ export function MobileNav({ isOpen, onClose, profileData }: MobileNavProps) {
             {isAdmin ? (
               <details open={pathname.startsWith("/admin")} className="group rounded-2xl bg-[#001f3f] text-[#f5f1de]">
                 <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between rounded-2xl px-4 text-[0.68rem] font-semibold uppercase tracking-[0.25em] text-[#d4af37] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">
-                  Administration
+                  Administrator
                   <span aria-hidden="true" className="text-lg transition group-open:rotate-90">›</span>
                 </summary>
                 <ul className="space-y-1 border-t border-white/10 p-2">
                   {adminNavigation.map((item) => (
-                    <MobileNavItem key={item.href} item={item} pathname={pathname} onClose={onClose} inverse />
+                    <NavLink key={item.href} item={item} pathname={pathname} onClick={onClose} inverse />
                   ))}
                 </ul>
               </details>
