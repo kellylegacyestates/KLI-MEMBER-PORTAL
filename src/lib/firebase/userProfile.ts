@@ -2,6 +2,7 @@ import {
   doc,
   getDoc,
   setDoc,
+  updateDoc,
   serverTimestamp,
   type Firestore,
   type FieldValue,
@@ -121,6 +122,36 @@ export async function fetchUserProfile(
     // Fail closed: return null so callers cannot assume any privilege.
     return null;
   }
+}
+
+/**
+ * Fields a member may update on their own profile.
+ * Protected fields (uid, email, role, membershipStatus, createdAt) are
+ * intentionally excluded and must never appear here.
+ */
+export interface UpdateableProfileFields {
+  displayName: string;
+  institution: string;
+  membershipPurpose: string;
+}
+
+/**
+ * Update the permitted member-editable fields on a profile document.
+ * Only displayName, institution, membershipPurpose, and updatedAt are written.
+ * All protected fields are excluded at the call-site, not just in Firestore rules.
+ */
+export async function updateUserProfile(
+  db: Firestore,
+  uid: string,
+  fields: UpdateableProfileFields
+): Promise<void> {
+  const ref = doc(db, USERS_COLLECTION, uid);
+  await updateDoc(ref, {
+    displayName: fields.displayName,
+    institution: fields.institution,
+    membershipPurpose: fields.membershipPurpose,
+    updatedAt: serverTimestamp(),
+  });
 }
 
 /**
