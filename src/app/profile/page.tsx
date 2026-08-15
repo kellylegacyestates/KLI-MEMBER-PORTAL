@@ -5,7 +5,7 @@ import { MemberProfileCard } from "@/components/features/profile/MemberProfileCa
 import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
-  title: "Account",
+  title: "Profile",
   description: "Member profile and account settings for Kelly Legacy Institute.",
 };
 

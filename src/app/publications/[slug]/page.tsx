@@ -173,6 +173,21 @@ export default async function PublicationDetailPage({ params }: PageProps) {
             <p className="mt-3 text-sm text-[#d8d0bc]">Related study access will be added when available.</p>
           )}
         </section>
+
+        <nav aria-label="Publication next steps" className="flex flex-col gap-3 border-t border-[#d8d0bc] pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            href="/publications"
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-[#526276] hover:text-[#001f3f]"
+          >
+            ← Return to publications
+          </Link>
+          <Link
+            href="/research-library"
+            className="inline-flex min-h-11 items-center rounded-full bg-[#001f3f] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#002f5f]"
+          >
+            Explore related research →
+          </Link>
+        </nav>
       </article>
     </PublicLayout>
   );

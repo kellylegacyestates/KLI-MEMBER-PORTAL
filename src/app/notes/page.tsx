@@ -6,7 +6,7 @@ import { notesEntries } from "@/lib/institutionalContent";
 import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
-  title: "My Notes",
+  title: "Notes",
   description: "The notes workspace for Kelly Legacy Institute members to capture observations and study points.",
 };
 
@@ -16,7 +16,7 @@ export default async function NotesPage() {
       <PortalShell>
           <div className="space-y-8">
             <SectionHeader
-              eyebrow="My Notes"
+              eyebrow="Notes"
               title="Member notes"
               description="A dedicated workspace for annotations, observations, and reference points tied to member learning."
             />

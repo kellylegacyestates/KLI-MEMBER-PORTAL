@@ -32,14 +32,14 @@ export const primaryNavigation: NavigationGroup[] = [
   },
   {
     label: "Publications",
-    items: [{ label: "Publication Registry", href: "/publications" }],
+    items: [{ label: "Publications", href: "/publications" }],
   },
   {
     label: "Records",
     items: [
       { label: "Certificates", href: "/certificates" },
       { label: "Tasks & Obligations", href: "/standing-ledger" },
-      { label: "Document Downloads", href: "/downloads" },
+      { label: "Downloads", href: "/downloads" },
     ],
   },
   {
