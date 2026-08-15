@@ -7,6 +7,10 @@ import {
   type Firestore,
   type FieldValue,
 } from "firebase/firestore";
+import {
+  isValidAccountStatus,
+  isValidRole,
+} from "@/lib/firebase/userProfileValidators";
 export {
   isValidAccountStatus,
   isValidMembershipStatus,

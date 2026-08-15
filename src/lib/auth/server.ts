@@ -5,10 +5,7 @@ import { cookies } from "next/headers";
 import type { DecodedIdToken } from "firebase-admin/auth";
 import type { DocumentData, Timestamp } from "firebase-admin/firestore";
 import type {
-  MembershipStatus,
-  AccountStatus,
   ResolvedUserProfile,
-  UserRole,
 } from "@/lib/firebase/userProfile";
 import {
   isValidAccountStatus,
