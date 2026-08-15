@@ -38,7 +38,7 @@ export async function PortalShell({ children }: PortalShellProps) {
   } catch (error) {
     // Fail open for display: if profile fetch fails, shell renders without
     // profile data. Security boundaries are enforced by route guards, not here.
-    console.error("Portal shell profile lookup failed.", error);
+    console.warn("Portal shell profile lookup failed.", error);
   }
 
   return <AppShell profileData={profileData}>{children}</AppShell>;

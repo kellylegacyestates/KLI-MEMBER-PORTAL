@@ -168,6 +168,38 @@ function renderExecutiveDenied(
 function renderAdminDenied(
   result: Exclude<AdminAuthorizationResult, { kind: "authorized" | "unauthenticated" }>
 ) {
+  if (result.kind === "missing-profile") {
+    return (
+      <AccessCard
+        title="Profile unavailable"
+        message="Your administrator profile could not be verified. Please contact support for assistance."
+        action={<ContactSupportLink />}
+      />
+    );
+  }
+
+  if (result.kind === "inactive-account") {
+    const profile: ResolvedUserProfile = result.profile;
+
+    if (profile.accountStatus === "revoked") {
+      return (
+        <AccessCard
+          title="Account revoked"
+          message="Your administrator account access has been permanently revoked. Please contact support if you believe this is an error."
+          action={<ContactSupportLink />}
+        />
+      );
+    }
+
+    return (
+      <AccessCard
+        title="Account suspended"
+        message="Your administrator account is not eligible for protected access. Please contact support to resolve this matter."
+        action={<ContactSupportLink />}
+      />
+    );
+  }
+
   if (result.kind === "forbidden") {
     return (
       <AccessCard
@@ -177,8 +209,6 @@ function renderAdminDenied(
       />
     );
   }
-
-  return renderMemberDenied(result);
 }
 
 // ---------------------------------------------------------------------------
