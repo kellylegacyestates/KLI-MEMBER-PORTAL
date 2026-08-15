@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import Link from "next/link";
+import { PublicLayout } from "@/components/layout/PublicLayout";
 
 export const metadata: Metadata = {
   title: "Member Portal",
@@ -23,7 +24,7 @@ const highlights = [
 
 export default function Home() {
   return (
-    <AppShell>
+    <PublicLayout>
       <section className="space-y-8">
         <div className="rounded-[2rem] border border-[#d8d0bc] bg-[#001f3f] p-8 text-[#f5f1de] sm:p-10">
           <p className="text-[0.65rem] uppercase tracking-[0.35em] text-[#d4af37]">Kelly Legacy Institute</p>
@@ -34,8 +35,15 @@ export default function Home() {
             The portal presents curriculum, research support, weekly briefings, publications, and account services in a coherent experience shaped for scholarly and administrative use.
           </p>
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#f5f1de]">Member Access</span>
-            <span className="rounded-full border border-[#d4af37]/30 bg-[#d4af37]/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.25em] text-[#d4af37]">Institutional Resources</span>
+            <Link href="/login" className="inline-flex min-h-11 items-center rounded-full bg-[#d4af37] px-5 py-2.5 text-sm font-semibold text-[#001f3f]">
+              Sign in
+            </Link>
+            <Link href="/register" className="inline-flex min-h-11 items-center rounded-full border border-white/25 bg-white/10 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/15">
+              Apply for membership
+            </Link>
+            <Link href="/publications" className="inline-flex min-h-11 items-center rounded-full px-4 py-2.5 text-sm font-semibold text-[#f5f1de] underline decoration-[#d4af37] underline-offset-4">
+              Browse publications
+            </Link>
           </div>
         </div>
 
@@ -72,6 +80,6 @@ export default function Home() {
           ))}
         </div>
       </section>
-    </AppShell>
+    </PublicLayout>
   );
 }
