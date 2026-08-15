@@ -8,38 +8,35 @@ runConfig:
   # memoryMiB: 512
 
 # Environment variables and secrets.
-# Values are supplied from Firebase App Hosting / Cloud Secret Manager so real
-# project configuration is never committed to the repository.
 env:
-  # Firebase Web SDK (browser-visible after build). These are secret-backed only
-  # to avoid committing real values; they are still exposed in the client bundle.
+  # Firebase Web SDK (browser-visible after build).
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
-    secret: nextPublicFirebaseApiKey
+    value: "AIzaSyDHR1cUABh6LVJpjqy_qZUbxKsKDufRZI8"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-    secret: nextPublicFirebaseAuthDomain
+    value: "legacy-ai-production.firebaseapp.com"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
-    secret: nextPublicFirebaseProjectId
+    value: "legacy-ai-production"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-    secret: nextPublicFirebaseStorageBucket
+    value: "legacy-ai-production.firebasestorage.app"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-    secret: nextPublicFirebaseMessagingSenderId
+    value: "990120571406"
     availability:
       - BUILD
       - RUNTIME
   - variable: NEXT_PUBLIC_FIREBASE_APP_ID
-    secret: nextPublicFirebaseAppId
+    value: "1:990120571406:web:3ef7493fc8827a2c44025f"
     availability:
       - BUILD
       - RUNTIME
