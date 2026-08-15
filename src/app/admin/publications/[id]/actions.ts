@@ -3,33 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/server";
+import {
+  isDistributionStatus,
+  isPublicationStatus,
+} from "@/lib/publication-validation";
 import { getPublicationById, updatePublication } from "@/lib/publications";
 import type {
   DistributionStatus,
-  PublicationStatus,
   PublicationVersion,
 } from "@/types/publication";
-
-const publicationStatuses = new Set<PublicationStatus>([
-  "draft",
-  "preprint",
-  "published",
-  "under-review",
-  "accepted",
-  "superseded",
-  "withdrawn",
-]);
-const distributionStatuses = new Set<DistributionStatus>([
-  "planned",
-  "draft",
-  "preliminary_upload",
-  "submitted",
-  "under-review",
-  "published",
-  "rejected",
-  "withdrawn",
-  "not-submitted",
-]);
 
 function text(formData: FormData, name: string): string {
   const value = formData.get(name);
@@ -42,9 +24,16 @@ function nullableText(formData: FormData, name: string): string | null {
 
 function validatedUrl(value: string | null): string | null {
   if (!value) return null;
-  const url = new URL(value);
-  if (url.protocol !== "https:") throw new Error("External record URLs must use HTTPS.");
-  return url.toString();
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") throw new Error("External record URLs must use HTTPS.");
+    return url.toString();
+  } catch (error) {
+    if (error instanceof Error && error.message === "External record URLs must use HTTPS.") {
+      throw error;
+    }
+    throw new Error("External record URL is not a valid URL.");
+  }
 }
 
 export async function updatePublicationAction(id: string, formData: FormData) {
@@ -54,16 +43,16 @@ export async function updatePublicationAction(id: string, formData: FormData) {
   const publication = await getPublicationById(id);
   if (!publication) throw new Error("Publication not found.");
 
-  const status = text(formData, "status") as PublicationStatus;
+  const status = text(formData, "status");
   const currentVersion = text(formData, "currentVersion");
   const ssrnStatus = text(formData, "ssrnStatus") as DistributionStatus;
   const zenodoStatus = text(formData, "zenodoStatus") as DistributionStatus;
   const websiteStatus = text(formData, "websiteStatus") as DistributionStatus;
   const journalStatus = text(formData, "journalStatus") as DistributionStatus;
-  if (!publicationStatuses.has(status)) throw new Error("Invalid publication status.");
+  if (!isPublicationStatus(status)) throw new Error("Invalid publication status.");
   if (
     ![ssrnStatus, zenodoStatus, websiteStatus, journalStatus].every((value) =>
-      distributionStatuses.has(value)
+      isDistributionStatus(value)
     )
   ) {
     throw new Error("Invalid distribution status.");

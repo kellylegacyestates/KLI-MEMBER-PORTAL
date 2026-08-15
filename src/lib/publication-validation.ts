@@ -34,6 +34,14 @@ const distributionStatuses = new Set<DistributionStatus>([
   "not-submitted",
 ]);
 
+export function isPublicationStatus(value: unknown): value is PublicationStatus {
+  return publicationStatuses.has(value as PublicationStatus);
+}
+
+export function isDistributionStatus(value: unknown): value is DistributionStatus {
+  return distributionStatuses.has(value as DistributionStatus);
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -62,7 +70,7 @@ export function isCanonicalPublicationId(value: string): boolean {
 }
 
 function normalizeDistributionEntry(value: unknown): PublicationDistributionEntry {
-  if (!isObject(value) || !distributionStatuses.has(value.status as DistributionStatus)) {
+  if (!isObject(value) || !isDistributionStatus(value.status)) {
     throw new Error("Invalid publication distribution status.");
   }
   return {
@@ -133,7 +141,7 @@ export function normalizePublicationRecord(
     throw new Error("Invalid publication identity.");
   }
   if (!DATE_PATTERN.test(publicationDate)) throw new Error("Invalid publication date.");
-  if (!publicationStatuses.has(value.status as PublicationStatus)) {
+  if (!isPublicationStatus(value.status)) {
     throw new Error("Invalid publication status.");
   }
   if (value.visibility !== "public" && value.visibility !== "private") {
