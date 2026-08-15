@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminPublicationsPage() {
   return (
     <AdminRouteGuard pathname="/admin/publications">
-      <AppShell>
+      <PortalShell>
         <div className="space-y-8">
           <SectionHeader eyebrow="Administration" title="Publication Manager" description="Coordinate publication readiness, release timing, and distribution settings." />
           <DataTable title="Publication queue" columns={[{ key: "title", header: "Title" }, { key: "status", header: "Status" }, { key: "audience", header: "Audience" }]} rows={rows} />
         </div>
-      </AppShell>
+      </PortalShell>
     </AdminRouteGuard>
   );
 }

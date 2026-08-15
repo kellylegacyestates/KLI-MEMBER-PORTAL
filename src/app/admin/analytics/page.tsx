@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ const metrics = [
 export default async function AdminAnalyticsPage() {
   return (
     <AdminRouteGuard pathname="/admin/analytics">
-      <AppShell>
+      <PortalShell>
         <div className="space-y-8">
           <SectionHeader eyebrow="Administration" title="Analytics" description="Institutional engagement metrics prepared for internal review and strategic planning." />
           <div className="grid gap-6 md:grid-cols-3">
@@ -27,7 +27,7 @@ export default async function AdminAnalyticsPage() {
             ))}
           </div>
         </div>
-      </AppShell>
+      </PortalShell>
     </AdminRouteGuard>
   );
 }

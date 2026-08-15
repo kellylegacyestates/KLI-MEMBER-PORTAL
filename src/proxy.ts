@@ -34,10 +34,13 @@ export const config = {
     "/certificates/:path*",
     "/billing/:path*",
     "/profile/:path*",
+    "/account/:path*",
+    "/library/:path*",
     "/publications/:path*",
     "/research-library/:path*",
     "/standing-ledger/:path*",
     "/support/:path*",
+    "/executive/:path*",
     "/admin/:path*",
   ],
 };

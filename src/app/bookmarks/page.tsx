@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { bookmarkEntries } from "@/lib/institutionalContent";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function BookmarksPage() {
   return (
     <MemberRouteGuard pathname="/bookmarks">
-      <AppShell>
+      <PortalShell>
           <div className="space-y-8">
             <SectionHeader
               eyebrow="Bookmarks"
@@ -26,7 +26,7 @@ export default async function BookmarksPage() {
               ))}
             </div>
           </div>
-        </AppShell>
+        </PortalShell>
     </MemberRouteGuard>
   );
 }

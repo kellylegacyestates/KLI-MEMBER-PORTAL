@@ -13,19 +13,24 @@ import {
 // ---------------------------------------------------------------------------
 
 /**
- * The three roles that exist in the system.
+ * The roles that exist in the system.
  *
  * - "member"      Default role for every new registration.  Access to all
  *                 member routes; no administrative authority.
  * - "instructor"  Elevated content-creation role.  Granted only by an
  *                 administrator directly in Firestore; cannot be self-assigned.
- * - "admin"       Full administrative authority.  Same restriction.
+ *                 Intended permissions: can create/edit curriculum content and
+ *                 course materials; cannot manage members or access admin tools.
+ * - "executive"   Leadership and governance role.  Granted only by an admin.
+ *                 Permitted on: all member routes plus executive routes
+ *                 (/executive and sub-paths).
+ * - "admin"       Full administrative authority.  Same restriction as above.
  *
  * SECURITY NOTE: the client-side registration path ALWAYS hard-codes the role
  * to "member".  Roles may only be elevated by a trusted administrator via the
  * Firebase console or a privileged server-side function — never by the browser.
  */
-export type UserRole = "member" | "instructor" | "admin";
+export type UserRole = "member" | "instructor" | "executive" | "admin";
 
 /**
  * Membership status lifecycle:
@@ -35,10 +40,11 @@ export type UserRole = "member" | "instructor" | "admin";
  *               control who gains full access without needing to immediately
  *               suspend newly joined accounts.
  * - "active"     Full access granted.
- * - "suspended"  Access revoked; user can authenticate but the application
- *               must deny access to protected content.
+ * - "suspended"  Temporarily blocked; administrator action required.
+ * - "expired"    Membership term lapsed; renewal required.
+ * - "revoked"    Permanently revoked; no path to self-reinstatement.
  */
-export type MembershipStatus = "pending" | "active" | "suspended";
+export type MembershipStatus = "pending" | "active" | "suspended" | "expired" | "revoked";
 
 // ---------------------------------------------------------------------------
 // Profile document shape
@@ -69,9 +75,14 @@ export interface ResolvedUserProfile extends Omit<UserProfile, "createdAt" | "up
 
 const USERS_COLLECTION = "users";
 
-/** Returns true if the given value is a recognised, non-privileged role. */
+/** Returns true if the given value is a recognised role. */
 export function isValidRole(value: unknown): value is UserRole {
-  return value === "member" || value === "instructor" || value === "admin";
+  return (
+    value === "member" ||
+    value === "instructor" ||
+    value === "executive" ||
+    value === "admin"
+  );
 }
 
 /**
@@ -100,7 +111,7 @@ export async function fetchUserProfile(
     // Validate the role field before trusting it.
     const role: UserRole = isValidRole(data.role) ? data.role : "member";
 
-    const status = (["pending", "active", "suspended"] as const).includes(
+    const status = (["pending", "active", "suspended", "expired", "revoked"] as const).includes(
       data.membershipStatus
     )
       ? (data.membershipStatus as MembershipStatus)

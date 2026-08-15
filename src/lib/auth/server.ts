@@ -31,6 +31,19 @@ export type MemberAuthorizationResult =
       profile: ResolvedUserProfile;
     };
 
+export type ExecutiveAuthorizationResult =
+  | Exclude<MemberAuthorizationResult, { kind: "authorized" }>
+  | {
+      kind: "forbidden";
+      user: AuthenticatedServerUser;
+      profile: ResolvedUserProfile;
+    }
+  | {
+      kind: "authorized";
+      user: AuthenticatedServerUser;
+      profile: ResolvedUserProfile;
+    };
+
 export type AdminAuthorizationResult =
   | Exclude<MemberAuthorizationResult, { kind: "authorized" }>
   | {
@@ -45,11 +58,22 @@ export type AdminAuthorizationResult =
     };
 
 function isValidRole(value: unknown): value is UserRole {
-  return value === "member" || value === "instructor" || value === "admin";
+  return (
+    value === "member" ||
+    value === "instructor" ||
+    value === "executive" ||
+    value === "admin"
+  );
 }
 
 function isValidMembershipStatus(value: unknown): value is MembershipStatus {
-  return value === "pending" || value === "active" || value === "suspended";
+  return (
+    value === "pending" ||
+    value === "active" ||
+    value === "suspended" ||
+    value === "expired" ||
+    value === "revoked"
+  );
 }
 
 function asDate(value: unknown): Date | null {
@@ -148,6 +172,32 @@ export const requireActiveMember = cache(
     }
 
     return { kind: "authorized", user, profile };
+  }
+);
+
+/**
+ * Require executive-level access: executive or admin role with active membership.
+ * Fails closed when session/profile is missing, membership is inactive, or the
+ * role is below "executive".
+ */
+export const requireExecutive = cache(
+  async (): Promise<ExecutiveAuthorizationResult> => {
+    const memberAccess = await requireActiveMember();
+
+    if (memberAccess.kind !== "authorized") {
+      return memberAccess;
+    }
+
+    const { role } = memberAccess.profile;
+    if (role !== "executive" && role !== "admin") {
+      return {
+        kind: "forbidden",
+        user: memberAccess.user,
+        profile: memberAccess.profile,
+      };
+    }
+
+    return memberAccess;
   }
 );
 

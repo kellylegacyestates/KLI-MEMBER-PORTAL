@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function SupportPage() {
   return (
     <MemberRouteGuard pathname="/support">
-      <AppShell>
+      <PortalShell>
         <div className="space-y-8">
           <SectionHeader eyebrow="Support" title="Member support" description="Dedicated assistance for access, account guidance, technical support, and institutional requests." />
           <div className="grid gap-6 md:grid-cols-3">
@@ -21,7 +21,7 @@ export default async function SupportPage() {
             <InfoCard title="Administrative requests" description="A channel for non-technical institutional and membership concerns." meta="Office" />
           </div>
         </div>
-      </AppShell>
+      </PortalShell>
     </MemberRouteGuard>
   );
 }

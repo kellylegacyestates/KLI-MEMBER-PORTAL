@@ -23,6 +23,8 @@ type AuthContextValue = {
   membershipStatus: MembershipStatus | null;
   /** True only when profile.role === "admin".  Fails closed on any ambiguity. */
   isAdmin: boolean;
+  /** True only when profile.role === "executive" or "admin". */
+  isExecutive: boolean;
   /** True only when profile.role === "instructor". */
   isInstructor: boolean;
   /** Call after a registration to immediately load the new profile. */
@@ -37,6 +39,7 @@ const AuthContext = createContext<AuthContextValue>({
   role: null,
   membershipStatus: null,
   isAdmin: false,
+  isExecutive: false,
   isInstructor: false,
   refreshProfile: async () => {},
 });
@@ -91,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       membershipStatus: profile?.membershipStatus ?? null,
       // Fail closed: only true when profile explicitly says "admin".
       isAdmin: profile?.role === "admin",
+      isExecutive: profile?.role === "executive" || profile?.role === "admin",
       isInstructor: profile?.role === "instructor",
       refreshProfile,
     }),
