@@ -94,7 +94,7 @@ export function InstitutionalHeader({ onMenuToggle, isMenuOpen, profileData }: I
           type="button"
           onClick={onMenuToggle}
           className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-[#f5f1de] lg:hidden"
-          aria-label="Open navigation"
+          aria-label={isMenuOpen ? "Close navigation" : "Open navigation"}
           aria-expanded={isMenuOpen}
           aria-controls="mobile-navigation"
         >

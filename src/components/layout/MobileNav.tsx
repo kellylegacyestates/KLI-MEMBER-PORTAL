@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { logoutUser } from "@/lib/auth/logout";
 import {
   adminNavigation,
@@ -67,6 +67,7 @@ export function MobileNav({ isOpen, onClose, profileData }: MobileNavProps) {
   const panelRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
+  const [signOutFailed, setSignOutFailed] = useState(false);
   const role = profileData?.role;
   const isExecutive = role === "executive" || role === "admin";
   const isAdmin = role === "admin";
@@ -119,11 +120,14 @@ export function MobileNav({ isOpen, onClose, profileData }: MobileNavProps) {
   if (!isOpen) return null;
 
   const handleLogout = async () => {
-    onClose();
+    setSignOutFailed(false);
     try {
       await logoutUser();
-    } finally {
+      onClose();
       router.push("/login");
+    } catch {
+      setSignOutFailed(true);
+      closeButtonRef.current?.focus();
     }
   };
 
@@ -182,6 +186,11 @@ export function MobileNav({ isOpen, onClose, profileData }: MobileNavProps) {
                 Sign out
               </button>
             </div>
+            {signOutFailed ? (
+              <p role="alert" className="mt-3 text-sm text-[#7a2b1d]">
+                Sign out failed. Please try again.
+              </p>
+            ) : null}
           </div>
         ) : null}
 

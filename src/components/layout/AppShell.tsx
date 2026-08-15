@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { InstitutionalFooter } from "./InstitutionalFooter";
 import { InstitutionalHeader } from "./InstitutionalHeader";
 import { MobileNav } from "./MobileNav";
@@ -21,6 +21,8 @@ type AppShellProps = {
 
 export function AppShell({ children, profileData }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const openMobileNav = useCallback(() => setMobileNavOpen(true), []);
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
 
   return (
     <div className="min-h-screen bg-[#f8f6ee] text-[#0f172a]">
@@ -31,13 +33,13 @@ export function AppShell({ children, profileData }: AppShellProps) {
         Skip to content
       </a>
       <InstitutionalHeader
-        onMenuToggle={() => setMobileNavOpen(true)}
+        onMenuToggle={openMobileNav}
         isMenuOpen={mobileNavOpen}
         profileData={profileData}
       />
       <MobileNav
         isOpen={mobileNavOpen}
-        onClose={() => setMobileNavOpen(false)}
+        onClose={closeMobileNav}
         profileData={profileData}
       />
 
