@@ -138,6 +138,14 @@ function renderMemberDenied(
         />
       );
     }
+
+    return (
+      <AccessCard
+        title="Administrator access unavailable"
+        message="Administrator access could not be verified. Please contact support for assistance."
+        action={<ContactSupportLink />}
+      />
+    );
   }
 
   return (

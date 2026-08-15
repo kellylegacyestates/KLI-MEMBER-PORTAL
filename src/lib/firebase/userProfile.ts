@@ -7,6 +7,11 @@ import {
   type Firestore,
   type FieldValue,
 } from "firebase/firestore";
+export {
+  isValidAccountStatus,
+  isValidMembershipStatus,
+  isValidRole,
+} from "@/lib/firebase/userProfileValidators";
 
 // ---------------------------------------------------------------------------
 // Role, account-status, and membership-status enumerations
@@ -84,21 +89,6 @@ export interface ResolvedUserProfile extends Omit<UserProfile, "createdAt" | "up
 // ---------------------------------------------------------------------------
 
 const USERS_COLLECTION = "users";
-
-/** Returns true if the given value is a recognised role. */
-export function isValidRole(value: unknown): value is UserRole {
-  return (
-    value === "member" ||
-    value === "instructor" ||
-    value === "executive" ||
-    value === "admin"
-  );
-}
-
-/** Returns true if the given value is a recognised account status. */
-export function isValidAccountStatus(value: unknown): value is AccountStatus {
-  return value === "active" || value === "suspended" || value === "revoked";
-}
 
 /**
  * Fetch a user's profile document from Firestore.

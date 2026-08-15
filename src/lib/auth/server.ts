@@ -10,6 +10,11 @@ import type {
   ResolvedUserProfile,
   UserRole,
 } from "@/lib/firebase/userProfile";
+import {
+  isValidAccountStatus,
+  isValidMembershipStatus,
+  isValidRole,
+} from "@/lib/firebase/userProfileValidators";
 import { getSessionCookieName } from "@/lib/auth/cookies";
 import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 
@@ -68,29 +73,6 @@ export type AdminAuthorizationResult =
       user: AuthenticatedServerUser;
       profile: ResolvedUserProfile;
     };
-
-function isValidRole(value: unknown): value is UserRole {
-  return (
-    value === "member" ||
-    value === "instructor" ||
-    value === "executive" ||
-    value === "admin"
-  );
-}
-
-function isValidMembershipStatus(value: unknown): value is MembershipStatus {
-  return (
-    value === "pending" ||
-    value === "active" ||
-    value === "suspended" ||
-    value === "expired" ||
-    value === "revoked"
-  );
-}
-
-function isValidAccountStatus(value: unknown): value is AccountStatus {
-  return value === "active" || value === "suspended" || value === "revoked";
-}
 
 function asDate(value: unknown): Date | null {
   if (value instanceof Date) {
