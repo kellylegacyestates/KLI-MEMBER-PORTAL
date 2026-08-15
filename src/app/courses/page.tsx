@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ const courses = [
 export default async function CoursesPage() {
   return (
     <MemberRouteGuard pathname="/courses">
-      <AppShell>
+      <PortalShell>
           <div className="space-y-8">
             <SectionHeader eyebrow="Courses" title="Course catalog" description="A carefully curated set of professional learning experiences for member advancement." />
             <div className="grid gap-6 md:grid-cols-3">
@@ -27,7 +27,7 @@ export default async function CoursesPage() {
               ))}
             </div>
           </div>
-        </AppShell>
+        </PortalShell>
     </MemberRouteGuard>
   );
 }

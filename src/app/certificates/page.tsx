@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
@@ -18,7 +18,7 @@ const certificates = [
 export default async function CertificatesPage() {
   return (
     <MemberRouteGuard pathname="/certificates">
-      <AppShell>
+      <PortalShell>
           <div className="space-y-8">
             <SectionHeader eyebrow="Certificates" title="Member certificates" description="A record of completed coursework and professional achievements issued through the portal." />
             <div className="grid gap-6 md:grid-cols-3">
@@ -27,7 +27,7 @@ export default async function CertificatesPage() {
               ))}
             </div>
           </div>
-        </AppShell>
+        </PortalShell>
     </MemberRouteGuard>
   );
 }

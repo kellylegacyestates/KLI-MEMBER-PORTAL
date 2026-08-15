@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { MetricCard } from "@/components/ui/MetricCard";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
@@ -20,7 +20,7 @@ const metrics = [
 export default async function AdminDashboardPage() {
   return (
     <AdminRouteGuard pathname="/admin">
-      <AppShell>
+      <PortalShell>
         <div className="space-y-8">
           <SectionHeader eyebrow="Administrator Dashboard" title="Institutional oversight" description="Administrative tools for managing members, curriculum, publications, and research resources." />
           <div className="grid gap-6 md:grid-cols-3">
@@ -34,7 +34,7 @@ export default async function AdminDashboardPage() {
             ))}
           </div>
         </div>
-      </AppShell>
+      </PortalShell>
     </AdminRouteGuard>
   );
 }

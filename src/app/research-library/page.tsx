@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { researchCategories, researchItems } from "@/lib/institutionalContent";
@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 export default async function ResearchLibraryPage() {
   return (
     <MemberRouteGuard pathname="/research-library">
-      <AppShell>
+      <PortalShell>
         <div className="space-y-8">
           <SectionHeader
             eyebrow="Research Library"
@@ -48,7 +48,7 @@ export default async function ResearchLibraryPage() {
             ))}
           </div>
         </div>
-      </AppShell>
+      </PortalShell>
     </MemberRouteGuard>
   );
 }

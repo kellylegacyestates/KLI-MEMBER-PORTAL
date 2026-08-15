@@ -6,8 +6,8 @@ service cloud.firestore {
     // -----------------------------------------------------------------------
     // users/{uid}
     //
-    // Each document stores a member's profile including their role and
-    // membership status.
+    // Each document stores a member's profile including their role,
+    // account status, and membership status.
     // -----------------------------------------------------------------------
     match /users/{uid} {
 
@@ -18,13 +18,15 @@ service cloud.firestore {
       allow read: if request.auth != null && request.auth.uid == uid;
 
       // CREATE: allowed only by the document's own authenticated user, and
-      // only with safe initial values.  Role must be "member"; membershipStatus
-      // must be "pending".  This prevents a newly registered user from
-      // self-assigning elevated privileges.
+      // only with safe initial values.  Role must be "member", accountStatus
+      // must be "active", and membershipStatus must be "pending".  This
+      // prevents a newly registered user from self-assigning elevated
+      // privileges or bypassing membership approval.
       allow create: if request.auth != null
                     && request.auth.uid == uid
                     && request.resource.data.uid == uid
                     && request.resource.data.role == "member"
+                    && request.resource.data.accountStatus == "active"
                     && request.resource.data.membershipStatus == "pending";
 
       // UPDATE: allowed only by the document's own authenticated user, with
@@ -32,8 +34,8 @@ service cloud.firestore {
       //
       // Only the four explicitly listed fields may be touched in any write.
       // This prevents clients from adding arbitrary new fields and ensures
-      // that protected fields (role, membershipStatus, uid, email, createdAt)
-      // can never be modified or deleted by the member.
+      // that protected fields (role, accountStatus, membershipStatus, uid,
+      // email, createdAt) can never be modified or deleted by the member.
       allow update: if request.auth != null
                     && request.auth.uid == uid
                     // Only these four keys may appear in the diff.
@@ -41,6 +43,7 @@ service cloud.firestore {
                          .hasOnly(['displayName', 'institution', 'membershipPurpose', 'updatedAt'])
                     // Protected fields must remain identical to their stored values.
                     && request.resource.data.role == resource.data.role
+                    && request.resource.data.accountStatus == resource.data.accountStatus
                     && request.resource.data.membershipStatus == resource.data.membershipStatus
                     && request.resource.data.uid == resource.data.uid
                     && request.resource.data.email == resource.data.email

@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { isAdminPath, isProtectedPath } from "@/lib/auth/routes";
+import { isAdminPath, isExecutivePath, isProtectedPath } from "@/lib/auth/routes";
 
 // ---------------------------------------------------------------------------
 // ProtectedRoute component
@@ -14,16 +14,20 @@ import { isAdminPath, isProtectedPath } from "@/lib/auth/routes";
  * protected pages render or protected route handlers run.
  */
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isAdmin, loading, profile, membershipStatus } = useAuth();
+  const { isAuthenticated, isAdmin, isExecutive, loading, profile, accountStatus, membershipStatus } = useAuth();
   const pathname = usePathname();
   const router = useRouter();
 
   const pathIsAdmin = isAdminPath(pathname);
+  const pathIsExecutive = isExecutivePath(pathname);
   const pathIsProtected = isProtectedPath(pathname);
   const profileIsValid = Boolean(profile);
+  const hasActiveAccount = accountStatus === "active";
   const hasActiveMembership = membershipStatus === "active";
-  const canAccessMemberRoutes = isAuthenticated && profileIsValid && hasActiveMembership;
-  const canAccessAdminRoutes = canAccessMemberRoutes && isAdmin;
+  const canAccessMemberRoutes =
+    isAuthenticated && profileIsValid && hasActiveAccount && hasActiveMembership;
+  const canAccessExecutiveRoutes = canAccessMemberRoutes && isExecutive;
+  const canAccessAdminRoutes = isAuthenticated && profileIsValid && hasActiveAccount && isAdmin;
 
   useEffect(() => {
     if (loading) return;
@@ -62,13 +66,38 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Authenticated user whose account is not active — deny all protected access.
+  if (pathIsProtected && isAuthenticated && !hasActiveAccount) {
+    return (
+      <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-center">
+        <p className="text-sm font-semibold text-[#001f3f]">Account access unavailable</p>
+        <p className="max-w-xs text-sm text-[#243449]">
+          Your account is not eligible for protected access. Please contact support for assistance.
+        </p>
+      </div>
+    );
+  }
+
   // Authenticated user whose membership is not active — deny member/admin access.
-  if (pathIsProtected && isAuthenticated && !hasActiveMembership) {
+  if (!pathIsAdmin && pathIsProtected && isAuthenticated && !hasActiveMembership) {
     return (
       <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-center">
         <p className="text-sm font-semibold text-[#001f3f]">Membership access pending</p>
         <p className="max-w-xs text-sm text-[#243449]">
           Your account exists, but member access is unavailable until your membership is approved.
+        </p>
+      </div>
+    );
+  }
+
+  // Authenticated member on an executive path without executive role — deny access.
+  // (Only reached when membership is active; inactive-membership check fires first.)
+  if (pathIsExecutive && isAuthenticated && hasActiveMembership && !canAccessExecutiveRoutes) {
+    return (
+      <div className="flex min-h-[240px] flex-col items-center justify-center gap-3 text-center">
+        <p className="text-sm font-semibold text-[#001f3f]">Executive access required</p>
+        <p className="max-w-xs text-sm text-[#243449]">
+          Your account does not have executive access to this area.
         </p>
       </div>
     );

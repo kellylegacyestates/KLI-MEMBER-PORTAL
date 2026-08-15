@@ -7,25 +7,48 @@ import {
   type Firestore,
   type FieldValue,
 } from "firebase/firestore";
+import {
+  isValidAccountStatus,
+  isValidRole,
+} from "@/lib/firebase/userProfileValidators";
+export {
+  isValidAccountStatus,
+  isValidMembershipStatus,
+  isValidRole,
+} from "@/lib/firebase/userProfileValidators";
 
 // ---------------------------------------------------------------------------
-// Role and membership-status enumerations
+// Role, account-status, and membership-status enumerations
 // ---------------------------------------------------------------------------
 
 /**
- * The three roles that exist in the system.
+ * The roles that exist in the system.
  *
  * - "member"      Default role for every new registration.  Access to all
  *                 member routes; no administrative authority.
- * - "instructor"  Elevated content-creation role.  Granted only by an
+ * - "instructor"  Future instructional role.  Granted only by an
  *                 administrator directly in Firestore; cannot be self-assigned.
- * - "admin"       Full administrative authority.  Same restriction.
+ *                 No dedicated authoring routes are implemented in this phase.
+ * - "executive"   Leadership and governance role.  Granted only by an admin.
+ *                 Permitted on: all member routes plus executive routes
+ *                 (/executive and sub-paths).
+ * - "admin"       Full administrative authority.  Same restriction as above.
  *
  * SECURITY NOTE: the client-side registration path ALWAYS hard-codes the role
  * to "member".  Roles may only be elevated by a trusted administrator via the
  * Firebase console or a privileged server-side function — never by the browser.
  */
-export type UserRole = "member" | "instructor" | "admin";
+export type UserRole = "member" | "instructor" | "executive" | "admin";
+
+/**
+ * Account status lifecycle:
+ *
+ * - "active"     The identity is eligible to sign in and be evaluated for
+ *               membership or role-based authorization.
+ * - "suspended" Temporarily blocked from all protected access.
+ * - "revoked"   Permanently blocked from all protected access.
+ */
+export type AccountStatus = "active" | "suspended" | "revoked";
 
 /**
  * Membership status lifecycle:
@@ -35,10 +58,11 @@ export type UserRole = "member" | "instructor" | "admin";
  *               control who gains full access without needing to immediately
  *               suspend newly joined accounts.
  * - "active"     Full access granted.
- * - "suspended"  Access revoked; user can authenticate but the application
- *               must deny access to protected content.
+ * - "suspended"  Temporarily blocked; administrator action required.
+ * - "expired"    Membership term lapsed; renewal required.
+ * - "revoked"    Permanently revoked; no path to self-reinstatement.
  */
-export type MembershipStatus = "pending" | "active" | "suspended";
+export type MembershipStatus = "pending" | "active" | "suspended" | "expired" | "revoked";
 
 // ---------------------------------------------------------------------------
 // Profile document shape
@@ -52,6 +76,7 @@ export interface UserProfile {
   institution: string;
   membershipPurpose: string;
   role: UserRole;
+  accountStatus: AccountStatus;
   membershipStatus: MembershipStatus;
   createdAt: FieldValue | Date;
   updatedAt: FieldValue | Date;
@@ -68,11 +93,6 @@ export interface ResolvedUserProfile extends Omit<UserProfile, "createdAt" | "up
 // ---------------------------------------------------------------------------
 
 const USERS_COLLECTION = "users";
-
-/** Returns true if the given value is a recognised, non-privileged role. */
-export function isValidRole(value: unknown): value is UserRole {
-  return value === "member" || value === "instructor" || value === "admin";
-}
 
 /**
  * Fetch a user's profile document from Firestore.
@@ -99,8 +119,11 @@ export async function fetchUserProfile(
 
     // Validate the role field before trusting it.
     const role: UserRole = isValidRole(data.role) ? data.role : "member";
+    const accountStatus: AccountStatus = isValidAccountStatus(data.accountStatus)
+      ? data.accountStatus
+      : "suspended";
 
-    const status = (["pending", "active", "suspended"] as const).includes(
+    const status = (["pending", "active", "suspended", "expired", "revoked"] as const).includes(
       data.membershipStatus
     )
       ? (data.membershipStatus as MembershipStatus)
@@ -114,6 +137,7 @@ export async function fetchUserProfile(
       membershipPurpose:
         typeof data.membershipPurpose === "string" ? data.membershipPurpose : "",
       role,
+      accountStatus,
       membershipStatus: status,
       createdAt: data.createdAt?.toDate?.() ?? null,
       updatedAt: data.updatedAt?.toDate?.() ?? null,
@@ -126,7 +150,8 @@ export async function fetchUserProfile(
 
 /**
  * Write a brand-new user profile to Firestore.
- * Role is ALWAYS forced to "member" and membershipStatus to "pending".
+ * Role is ALWAYS forced to "member", accountStatus to "active", and
+ * membershipStatus to "pending".
  * Callers cannot override these values.
  */
 export async function createUserProfile(
@@ -152,6 +177,9 @@ export async function createUserProfile(
     membershipPurpose: params.membershipPurpose,
     // Hard-coded: clients can never self-assign a privileged role.
     role: "member",
+    // Hard-coded: new identities can authenticate, but member content remains
+    // blocked until membershipStatus is approved.
+    accountStatus: "active",
     // Hard-coded: pending until an admin approves.
     membershipStatus: "pending",
     createdAt: serverTimestamp(),
@@ -165,8 +193,8 @@ export async function createUserProfile(
  * Update the editable fields of a user's own profile.
  *
  * SECURITY NOTE: Only the fields explicitly listed here may be mutated by the
- * member themselves.  Role and membershipStatus are intentionally excluded —
- * those are admin-only operations.
+ * member themselves.  Role, accountStatus, and membershipStatus are
+ * intentionally excluded — those are admin-only operations.
  */
 export async function updateUserProfile(
   db: Firestore,

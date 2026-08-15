@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { MemberDashboard } from "@/components/features/dashboard/MemberDashboard";
 import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 export default async function MemberDashboardPage() {
   return (
     <MemberRouteGuard pathname="/dashboard">
-      <AppShell>
+      <PortalShell>
           <MemberDashboard />
-        </AppShell>
+        </PortalShell>
     </MemberRouteGuard>
   );
 }

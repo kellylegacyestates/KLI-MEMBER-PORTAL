@@ -1,17 +1,32 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/components/auth/AuthProvider";
 import { logoutUser } from "@/lib/auth/logout";
 import { GlobalSearch } from "./SearchBar";
+import type { PortalProfileData } from "./AppShell";
 
 type InstitutionalHeaderProps = {
   onMenuToggle: () => void;
+  profileData?: PortalProfileData | null;
 };
 
-export function InstitutionalHeader({ onMenuToggle }: InstitutionalHeaderProps) {
+const ROLE_LABELS: Record<string, string> = {
+  member: "Member",
+  instructor: "Instructor",
+  executive: "Executive",
+  admin: "Administrator",
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  active: "Active",
+  pending: "Pending",
+  suspended: "Suspended",
+  expired: "Expired",
+  revoked: "Revoked",
+};
+
+export function InstitutionalHeader({ onMenuToggle, profileData }: InstitutionalHeaderProps) {
   const router = useRouter();
-  const { user, loading } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -42,21 +57,36 @@ export function InstitutionalHeader({ onMenuToggle }: InstitutionalHeaderProps) 
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
-          <div className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm text-[#f5f1de]">
-            Institutional Access
-          </div>
-          <div className="rounded-full bg-[#d4af37] px-4 py-2 text-sm font-semibold text-[#001f3f]">
-            Member Services
-          </div>
-          {!loading && user ? (
-            <button
-              type="button"
-              onClick={handleLogout}
-              className="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm font-medium text-[#f5f1de] transition hover:bg-white/20"
-            >
-              Sign out
-            </button>
-          ) : null}
+          {profileData ? (
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-semibold text-[#f5f1de] leading-tight">
+                  {profileData.displayName || profileData.email}
+                </p>
+                <p className="text-[0.65rem] text-[#d4af37] leading-tight">
+                  {ROLE_LABELS[profileData.role] ?? profileData.role}
+                  {" · "}
+                  {STATUS_LABELS[profileData.membershipStatus] ?? profileData.membershipStatus}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-full border border-white/15 bg-white/10 px-3 py-2 text-sm font-medium text-[#f5f1de] transition hover:bg-white/20"
+              >
+                Sign out
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-sm text-[#f5f1de]">
+                Institutional Access
+              </div>
+              <div className="rounded-full bg-[#d4af37] px-4 py-2 text-sm font-semibold text-[#001f3f]">
+                Member Services
+              </div>
+            </>
+          )}
         </div>
 
         <button

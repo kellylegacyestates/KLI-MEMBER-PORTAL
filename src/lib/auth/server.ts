@@ -5,10 +5,13 @@ import { cookies } from "next/headers";
 import type { DecodedIdToken } from "firebase-admin/auth";
 import type { DocumentData, Timestamp } from "firebase-admin/firestore";
 import type {
-  MembershipStatus,
   ResolvedUserProfile,
-  UserRole,
 } from "@/lib/firebase/userProfile";
+import {
+  isValidAccountStatus,
+  isValidMembershipStatus,
+  isValidRole,
+} from "@/lib/firebase/userProfileValidators";
 import { getSessionCookieName } from "@/lib/auth/cookies";
 import { getFirebaseAdminAuth, getFirebaseAdminDb } from "@/lib/firebase/admin";
 
@@ -21,6 +24,11 @@ export type MemberAuthorizationResult =
   | { kind: "unauthenticated" }
   | { kind: "missing-profile"; user: AuthenticatedServerUser }
   | {
+      kind: "inactive-account";
+      user: AuthenticatedServerUser;
+      profile: ResolvedUserProfile;
+    }
+  | {
       kind: "inactive-membership";
       user: AuthenticatedServerUser;
       profile: ResolvedUserProfile;
@@ -31,7 +39,7 @@ export type MemberAuthorizationResult =
       profile: ResolvedUserProfile;
     };
 
-export type AdminAuthorizationResult =
+export type ExecutiveAuthorizationResult =
   | Exclude<MemberAuthorizationResult, { kind: "authorized" }>
   | {
       kind: "forbidden";
@@ -44,13 +52,24 @@ export type AdminAuthorizationResult =
       profile: ResolvedUserProfile;
     };
 
-function isValidRole(value: unknown): value is UserRole {
-  return value === "member" || value === "instructor" || value === "admin";
-}
-
-function isValidMembershipStatus(value: unknown): value is MembershipStatus {
-  return value === "pending" || value === "active" || value === "suspended";
-}
+export type AdminAuthorizationResult =
+  | { kind: "unauthenticated" }
+  | { kind: "missing-profile"; user: AuthenticatedServerUser }
+  | {
+      kind: "inactive-account";
+      user: AuthenticatedServerUser;
+      profile: ResolvedUserProfile;
+    }
+  | {
+      kind: "forbidden";
+      user: AuthenticatedServerUser;
+      profile: ResolvedUserProfile;
+    }
+  | {
+      kind: "authorized";
+      user: AuthenticatedServerUser;
+      profile: ResolvedUserProfile;
+    };
 
 function asDate(value: unknown): Date | null {
   if (value instanceof Date) {
@@ -70,6 +89,9 @@ function normalizeUserProfile(uid: string, data: DocumentData | undefined): Reso
   }
 
   const role = isValidRole(data.role) ? data.role : "member";
+  const accountStatus = isValidAccountStatus(data.accountStatus)
+    ? data.accountStatus
+    : "suspended";
   const membershipStatus = isValidMembershipStatus(data.membershipStatus)
     ? data.membershipStatus
     : "pending";
@@ -82,6 +104,7 @@ function normalizeUserProfile(uid: string, data: DocumentData | undefined): Reso
     membershipPurpose:
       typeof data.membershipPurpose === "string" ? data.membershipPurpose : "",
     role,
+    accountStatus,
     membershipStatus,
     createdAt: asDate(data.createdAt),
     updatedAt: asDate(data.updatedAt),
@@ -143,6 +166,10 @@ export const requireActiveMember = cache(
       return { kind: "missing-profile", user };
     }
 
+    if (profile.accountStatus !== "active") {
+      return { kind: "inactive-account", user, profile };
+    }
+
     if (profile.membershipStatus !== "active") {
       return { kind: "inactive-membership", user, profile };
     }
@@ -151,20 +178,56 @@ export const requireActiveMember = cache(
   }
 );
 
-export const requireAdmin = cache(async (): Promise<AdminAuthorizationResult> => {
-  const memberAccess = await requireActiveMember();
+/**
+ * Require executive-level access: executive or admin role with active membership.
+ * Fails closed when session/profile is missing, membership is inactive, or the
+ * role is below "executive".
+ */
+export const requireExecutive = cache(
+  async (): Promise<ExecutiveAuthorizationResult> => {
+    const memberAccess = await requireActiveMember();
 
-  if (memberAccess.kind !== "authorized") {
+    if (memberAccess.kind !== "authorized") {
+      return memberAccess;
+    }
+
+    const { role } = memberAccess.profile;
+    if (role !== "executive" && role !== "admin") {
+      return {
+        kind: "forbidden",
+        user: memberAccess.user,
+        profile: memberAccess.profile,
+      };
+    }
+
     return memberAccess;
   }
+);
 
-  if (memberAccess.profile.role !== "admin") {
+export const requireAdmin = cache(async (): Promise<AdminAuthorizationResult> => {
+  const user = await getServerSessionUser();
+
+  if (!user) {
+    return { kind: "unauthenticated" };
+  }
+
+  const profile = await getAuthenticatedMemberProfile(user.uid);
+
+  if (!profile) {
+    return { kind: "missing-profile", user };
+  }
+
+  if (profile.accountStatus !== "active") {
+    return { kind: "inactive-account", user, profile };
+  }
+
+  if (profile.role !== "admin") {
     return {
       kind: "forbidden",
-      user: memberAccess.user,
-      profile: memberAccess.profile,
+      user,
+      profile,
     };
   }
 
-  return memberAccess;
+  return { kind: "authorized", user, profile };
 });

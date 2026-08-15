@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default async function BillingPage() {
   return (
     <MemberRouteGuard pathname="/billing">
-      <AppShell>
+      <PortalShell>
           <div className="space-y-8">
             <SectionHeader
               eyebrow="Billing"
@@ -36,7 +36,7 @@ export default async function BillingPage() {
               </InfoCard>
             </div>
           </div>
-        </AppShell>
+        </PortalShell>
     </MemberRouteGuard>
   );
 }

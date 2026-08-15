@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminCurriculumPage() {
   return (
     <AdminRouteGuard pathname="/admin/curriculum">
-      <AppShell>
+      <PortalShell>
         <div className="space-y-8">
           <SectionHeader eyebrow="Administration" title="Curriculum Manager" description="Oversee curriculum modules and publication readiness for the member experience." />
           <DataTable title="Curriculum inventory" columns={[{ key: "module", header: "Module" }, { key: "status", header: "Status" }, { key: "updated", header: "Updated" }]} rows={rows} />
         </div>
-      </AppShell>
+      </PortalShell>
     </AdminRouteGuard>
   );
 }

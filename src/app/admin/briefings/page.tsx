@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
 import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
@@ -18,12 +18,12 @@ const rows = [
 export default async function AdminBriefingsPage() {
   return (
     <AdminRouteGuard pathname="/admin/briefings">
-      <AppShell>
+      <PortalShell>
         <div className="space-y-8">
           <SectionHeader eyebrow="Administration" title="Weekly Briefings Manager" description="Coordinate briefing publication, audience targeting, and release calendar." />
           <DataTable title="Briefing queue" columns={[{ key: "title", header: "Title" }, { key: "status", header: "Status" }, { key: "audience", header: "Audience" }]} rows={rows} />
         </div>
-      </AppShell>
+      </PortalShell>
     </AdminRouteGuard>
   );
 }
