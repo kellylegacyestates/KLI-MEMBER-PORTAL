@@ -51,7 +51,13 @@ export type ExecutiveAuthorizationResult =
     };
 
 export type AdminAuthorizationResult =
-  | Exclude<MemberAuthorizationResult, { kind: "authorized" }>
+  | { kind: "unauthenticated" }
+  | { kind: "missing-profile"; user: AuthenticatedServerUser }
+  | {
+      kind: "inactive-account";
+      user: AuthenticatedServerUser;
+      profile: ResolvedUserProfile;
+    }
   | {
       kind: "forbidden";
       user: AuthenticatedServerUser;
