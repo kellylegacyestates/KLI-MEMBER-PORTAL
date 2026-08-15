@@ -2,30 +2,44 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { adminNavigation, executiveNavigation, primaryNavigation } from "./navigation";
+import {
+  adminNavigation,
+  executiveNavigation,
+  isNavigationItemActive,
+  primaryNavigation,
+  type NavigationItem,
+} from "./navigation";
 import type { UserRole } from "@/lib/firebase/userProfile";
 
 type SidebarNavProps = {
   role?: UserRole | null;
 };
 
-function NavItem({ label, href }: { label: string; href: string }) {
-  const pathname = usePathname();
-  const isActive = pathname === href || (href !== "/" && pathname.startsWith(href));
-
+function NavItem({ item, pathname, inverse = false }: { item: NavigationItem; pathname: string; inverse?: boolean }) {
+  const isActive = isNavigationItemActive(pathname, item);
   return (
     <li>
       <Link
-        href={href}
-        className={`flex items-center rounded-2xl px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2 ${isActive ? "bg-[#f5f1de] text-[#001f3f]" : "text-[#243449] hover:bg-[#f5f1de] hover:text-[#001f3f]"}`}
+        href={item.href}
+        aria-current={isActive ? "page" : undefined}
+        className={`flex min-h-11 items-center rounded-2xl px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] focus-visible:ring-offset-2 ${
+          inverse
+            ? isActive
+              ? "bg-white/15 text-white"
+              : "text-[#f5f1de] hover:bg-white/10"
+            : isActive
+              ? "bg-[#f5f1de] text-[#001f3f]"
+              : "text-[#243449] hover:bg-[#f5f1de] hover:text-[#001f3f]"
+        }`}
       >
-        {label}
+        {item.label}
       </Link>
     </li>
   );
 }
 
 export function SidebarNav({ role }: SidebarNavProps) {
+  const pathname = usePathname();
   const isExecutive = role === "executive" || role === "admin";
   const isAdmin = role === "admin";
 
@@ -38,11 +52,24 @@ export function SidebarNav({ role }: SidebarNavProps) {
           </p>
           <p className="mt-2 text-sm leading-7 text-[#243449]">Institutional materials and member services.</p>
         </div>
-        <ul className="mt-4 space-y-1">
-          {primaryNavigation.map((item) => (
-            <NavItem key={item.label} label={item.label} href={item.href} />
-          ))}
-        </ul>
+        <div className="mt-4 space-y-2">
+          {primaryNavigation.map((group) => {
+            const groupIsActive = group.items.some((item) => isNavigationItemActive(pathname, item));
+            return (
+              <details key={group.label} open={groupIsActive || group.label === "Home"} className="group rounded-xl">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between rounded-xl px-3 text-[0.68rem] font-semibold uppercase tracking-[0.25em] text-[#526276] hover:bg-[#f5f1de] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">
+                  {group.label}
+                  <span aria-hidden="true" className="text-base transition group-open:rotate-90">›</span>
+                </summary>
+                <ul className="mt-1 space-y-1 border-l border-[#d8d0bc] pl-2">
+                  {group.items.map((item) => (
+                    <NavItem key={item.href} item={item} pathname={pathname} />
+                  ))}
+                </ul>
+              </details>
+            );
+          })}
+        </div>
 
         {/* Executive section — rendered only for executive and admin profiles. */}
         {isExecutive && (
@@ -52,7 +79,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
             </p>
             <ul className="mt-3 space-y-1">
               {executiveNavigation.map((item) => (
-                <NavItem key={item.label} label={item.label} href={item.href} />
+                <NavItem key={item.href} item={item} pathname={pathname} />
               ))}
             </ul>
           </div>
@@ -66,7 +93,7 @@ export function SidebarNav({ role }: SidebarNavProps) {
             </p>
             <ul className="mt-3 space-y-1">
               {adminNavigation.map((item) => (
-                <NavItem key={item.label} label={item.label} href={item.href} />
+                <NavItem key={item.href} item={item} pathname={pathname} inverse />
               ))}
             </ul>
           </div>

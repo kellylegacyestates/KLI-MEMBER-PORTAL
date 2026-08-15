@@ -4,6 +4,12 @@ import { InstitutionalFooter } from "./InstitutionalFooter";
 export function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#f8f6ee] text-[#0f172a]">
+      <a
+        href="#main-content"
+        className="fixed left-4 top-4 z-[100] -translate-y-24 rounded-full bg-[#d4af37] px-4 py-3 font-semibold text-[#001f3f] transition focus:translate-y-0"
+      >
+        Skip to content
+      </a>
       <header className="border-b border-[#d8d0bc] bg-[#001f3f] text-[#f5f1de]">
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-5 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
           <div>
@@ -14,12 +20,12 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
             <Link href="/" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Overview</Link>
             <Link href="/publications" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Publications</Link>
             <Link href="/login" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Login</Link>
-            <Link href="/register" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Register</Link>
+            <Link href="/register" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Apply for membership</Link>
           </nav>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">{children}</main>
+      <main id="main-content" tabIndex={-1} className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">{children}</main>
       <InstitutionalFooter />
     </div>
   );
