@@ -332,7 +332,7 @@ describe("requireAdmin", () => {
     expect(result.kind).toBe("unauthenticated");
   });
 
-  it("returns forbidden for pending member", async () => {
+  it("returns forbidden for non-admin role even when membership is pending", async () => {
     setupSession("valid-token", fakeClaims("test-uid"), profileData("member", "pending"));
     const result = await requireAdmin();
     expect(result.kind).toBe("forbidden");
