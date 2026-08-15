@@ -1,6 +1,7 @@
 import { getApps, initializeApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import { getSafeErrorCode, reportLoginFailure } from "@/lib/auth/loginDiagnostics";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -36,15 +37,22 @@ const canInitializeClient =
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 let db: Firestore | null = null;
+let firebaseClientInitializationErrorCode: string | null = null;
 
 if (canInitializeClient) {
-  app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
+  try {
+    app = getApps().length ? getApps()[0] : initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (error) {
+    firebaseClientInitializationErrorCode =
+      getSafeErrorCode(error) ?? "unknown";
+    reportLoginFailure("firebase-client-initialization", error);
+  }
 } else if (!hasRequiredConfig || hasPlaceholderValues) {
   console.warn(
     "Firebase Web App configuration is missing or still uses placeholder values. Add the required NEXT_PUBLIC_FIREBASE_* values before enabling member authentication."
   );
 }
 
-export { auth, db };
+export { auth, db, firebaseClientInitializationErrorCode };

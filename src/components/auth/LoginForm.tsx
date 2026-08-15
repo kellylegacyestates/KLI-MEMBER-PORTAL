@@ -4,29 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase/client";
+import {
+  auth,
+  firebaseClientInitializationErrorCode,
+} from "@/lib/firebase/client";
+import {
+  getCredentialAuthenticationMessage,
+  reportLoginFailure,
+} from "@/lib/auth/loginDiagnostics";
 import { safeRedirectTarget } from "@/lib/auth/redirect";
-
-const getFriendlyAuthError = (code: string) => {
-  switch (code) {
-    case "auth/invalid-email":
-      return "Please enter a valid email address.";
-    case "auth/user-disabled":
-      return "This member account has been disabled.";
-    case "auth/user-not-found":
-      return "The sign-in details are invalid. Please try again.";
-    case "auth/wrong-password":
-      return "The sign-in details are invalid. Please try again.";
-    case "auth/invalid-credential":
-      return "The sign-in details are invalid. Please try again.";
-    case "auth/too-many-requests":
-      return "Too many login attempts. Please wait a moment and try again.";
-    case "auth/network-request-failed":
-      return "A network issue interrupted the sign-in. Please try again.";
-    default:
-      return "We could not sign you in. Please verify your details and try again.";
-  }
-};
 
 export function LoginForm() {
   const router = useRouter();
@@ -44,9 +30,14 @@ export function LoginForm() {
     event.preventDefault();
 
     if (!auth) {
-      setError("Firebase authentication is not configured. Add the required NEXT_PUBLIC_FIREBASE_* values to continue.");
+      setError(
+        firebaseClientInitializationErrorCode
+          ? "Firebase client initialization failed. Reload the page or contact support."
+          : "Firebase authentication is not configured. Add the required NEXT_PUBLIC_FIREBASE_* values to continue."
+      );
       return;
     }
+    const firebaseAuth = auth;
 
     const sanitizedEmail = email.trim();
     if (!sanitizedEmail || !password.trim()) {
@@ -57,28 +48,64 @@ export function LoginForm() {
     setError("");
     setIsSubmitting(true);
 
+    const clearClientAuthentication = async () => {
+      try {
+        await signOut(firebaseAuth);
+      } catch {
+        // Best-effort cleanup; server authorization still requires a session cookie.
+      }
+    };
+
     try {
-      const credential = await signInWithEmailAndPassword(
-        auth,
-        sanitizedEmail,
-        password
-      );
-      const idToken = await credential.user.getIdToken();
-      const sessionResponse = await fetch("/api/auth/session", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store",
-        body: JSON.stringify({ idToken }),
-      });
+      let credential;
+      try {
+        credential = await signInWithEmailAndPassword(
+          firebaseAuth,
+          sanitizedEmail,
+          password
+        );
+      } catch (credentialError) {
+        reportLoginFailure(
+          "firebase-credential-authentication",
+          credentialError
+        );
+        setError(getCredentialAuthenticationMessage(credentialError));
+        return;
+      }
+
+      let idToken: string;
+      try {
+        idToken = await credential.user.getIdToken();
+      } catch (tokenError) {
+        await clearClientAuthentication();
+        reportLoginFailure("id-token-acquisition", tokenError);
+        setError(
+          "Firebase sign-in succeeded, but ID-token acquisition failed. Try again."
+        );
+        return;
+      }
+
+      let sessionResponse: Response;
+      try {
+        sessionResponse = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          cache: "no-store",
+          body: JSON.stringify({ idToken }),
+        });
+      } catch (sessionError) {
+        await clearClientAuthentication();
+        reportLoginFailure("session-creation", sessionError);
+        setError(
+          "Firebase sign-in succeeded, but the secure session request could not reach the server. Try again."
+        );
+        return;
+      }
 
       if (!sessionResponse.ok) {
-        try {
-          await signOut(auth);
-        } catch {
-          // Best-effort cleanup; the user should not keep a client-only login.
-        }
+        await clearClientAuthentication();
 
         if (sessionResponse.status === 429) {
           const retryAfter = Number(sessionResponse.headers.get("retry-after"));
@@ -93,28 +120,31 @@ export function LoginForm() {
             const body = (await sessionResponse.json()) as { error?: unknown };
             errorCode = typeof body.error === "string" ? body.error : "";
           } catch {
-            // Use the generic sign-in error when the response is not valid JSON.
+            // Use the stage-specific session error when the response is not JSON.
           }
           setError(
             errorCode === "email_verification_required"
-              ? "Please verify your email address before signing in."
-              : "We could not complete your sign-in. Please try again."
+              ? "Firebase sign-in succeeded, but email verification is required before a session can be created."
+              : "Firebase sign-in succeeded, but the server rejected secure session creation."
           );
         } else {
-          setError("We could not complete your sign-in. Please try again.");
+          setError(
+            `Firebase sign-in succeeded, but secure session creation failed (HTTP ${sessionResponse.status}).`
+          );
         }
+        reportLoginFailure("session-creation");
         return;
       }
 
       const safeRedirect = safeRedirectTarget(redirectTarget);
-      router.replace(safeRedirect);
-    } catch (signInError) {
-      if (!(signInError instanceof Error) || !("code" in signInError)) {
-        setError("We could not complete your sign-in. Please try again.");
-        return;
+      try {
+        router.replace(safeRedirect);
+      } catch (redirectError) {
+        reportLoginFailure("post-auth-redirect", redirectError);
+        setError(
+          "Your secure session was created, but the member portal could not be opened. Refresh the page to continue."
+        );
       }
-
-      setError(getFriendlyAuthError(String(signInError.code)));
     } finally {
       setIsSubmitting(false);
     }
