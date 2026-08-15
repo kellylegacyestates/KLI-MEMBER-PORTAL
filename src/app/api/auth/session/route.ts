@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getSessionCookieName, getSessionCookieOptions, getSessionDurationMs } from "@/lib/auth/cookies";
 import { isTrustedOrigin } from "@/lib/auth/request-safety";
+import { consumeSessionRateLimit } from "@/lib/auth/session-rate-limit";
 import { getFirebaseAdminAuth } from "@/lib/firebase/admin";
 
 export const runtime = "nodejs";
@@ -17,6 +18,21 @@ function clearSessionCookie(response: NextResponse) {
 export async function POST(request: NextRequest) {
   if (!isTrustedOrigin(request)) {
     return NextResponse.json({ ok: false }, { status: 403 });
+  }
+
+  try {
+    const rateLimit = await consumeSessionRateLimit(request);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { ok: false, error: "too_many_requests" },
+        {
+          status: 429,
+          headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
+        }
+      );
+    }
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 503 });
   }
 
   let idToken = "";

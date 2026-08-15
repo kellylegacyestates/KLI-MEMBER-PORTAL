@@ -53,6 +53,12 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Audit events are created only by trusted server code. Browser clients
+    // cannot read, alter, or delete the append-only security record.
+    match /auditEvents/{eventId} {
+      allow read, write: if false;
+    }
+
     // -----------------------------------------------------------------------
     // All other collections are denied by default.
     // -----------------------------------------------------------------------

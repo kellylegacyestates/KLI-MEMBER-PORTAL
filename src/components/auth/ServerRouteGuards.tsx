@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import {
   requireActiveMember,
   requireExecutive,
@@ -8,9 +9,18 @@ import {
   type MemberAuthorizationResult,
 } from "@/lib/auth/server";
 import type { ResolvedUserProfile } from "@/lib/firebase/userProfile";
+import { getSessionCookieName } from "@/lib/auth/cookies";
+import { safeRedirectTarget } from "@/lib/auth/redirect";
 
-function redirectToLogin(pathname: string): never {
-  redirect(`/login?redirect=${encodeURIComponent(pathname)}`);
+async function redirectToLogin(pathname: string): Promise<never> {
+  const cookieStore = await cookies();
+  const params = new URLSearchParams({
+    redirect: safeRedirectTarget(pathname),
+  });
+  if (cookieStore.has(getSessionCookieName())) {
+    params.set("reason", "session-expired");
+  }
+  redirect(`/login?${params.toString()}`);
 }
 
 // ---------------------------------------------------------------------------
@@ -234,7 +244,7 @@ export async function MemberRouteGuard({
   const result = await requireActiveMember();
 
   if (result.kind === "unauthenticated") {
-    redirectToLogin(pathname);
+    return redirectToLogin(pathname);
   }
 
   if (result.kind !== "authorized") {
@@ -254,7 +264,7 @@ export async function ExecutiveRouteGuard({
   const result = await requireExecutive();
 
   if (result.kind === "unauthenticated") {
-    redirectToLogin(pathname);
+    return redirectToLogin(pathname);
   }
 
   if (result.kind !== "authorized") {
@@ -274,7 +284,7 @@ export async function AdminRouteGuard({
   const result = await requireAdmin();
 
   if (result.kind === "unauthenticated") {
-    redirectToLogin(pathname);
+    return redirectToLogin(pathname);
   }
 
   if (result.kind !== "authorized") {
@@ -293,16 +303,6 @@ export function EmailVerificationRequiredView() {
     <AccessCard
       title="Email verification required"
       message="Please verify your email address before accessing the portal. Check your inbox for a verification link."
-      action={<LoginLink />}
-    />
-  );
-}
-
-export function SessionExpiredView() {
-  return (
-    <AccessCard
-      title="Session expired"
-      message="Your session has expired. Please sign in again to continue."
       action={<LoginLink />}
     />
   );

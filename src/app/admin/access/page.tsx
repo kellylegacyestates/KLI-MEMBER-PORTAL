@@ -3,6 +3,7 @@ import { PortalShell } from "@/components/layout/PortalShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
 import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
+import { SessionRevocationForm } from "@/components/features/admin/SessionRevocationForm";
 
 export const metadata: Metadata = {
   title: "Access Control",
@@ -51,6 +52,7 @@ export default async function AdminAccessPage() {
               />
             ))}
           </div>
+          <SessionRevocationForm />
         </div>
       </PortalShell>
     </AdminRouteGuard>

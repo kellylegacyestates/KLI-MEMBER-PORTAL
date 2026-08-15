@@ -279,6 +279,23 @@ kli-member-portal/
 - ✅ Audit logging of sensitive operations
 - ✅ Environment variable isolation
 
+### Session security operations
+
+- `POST /api/auth/session` permits 10 session-establishment requests per five-minute
+  client window. Counters are shared through Firestore so limits apply across
+  application instances. Throttled requests return `429` with `Retry-After`;
+  limiter storage failures return `503` rather than bypassing protection.
+- Members can use **Sign out all devices** on the profile page. The server derives
+  the user ID from the verified session cookie, revokes Firebase refresh tokens,
+  clears the current cookie, and requires re-authentication everywhere.
+- Active administrators can revoke another user's sessions from **Admin → Access**
+  by supplying the Firebase user ID and a support/security reason. Administrators
+  cannot use this workflow against their own account.
+- Session revocations are appended to the server-only `auditEvents` collection
+  with actor, target, old/new state, timestamp, reason, and outcome. Firestore
+  rules deny browser reads and writes; support staff should use trusted
+  administrative tooling when investigating these records.
+
 ### Privacy
 - Members can only access their own data
 - Subscription status controls content access
