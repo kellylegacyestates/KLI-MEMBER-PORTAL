@@ -5,12 +5,21 @@ import { InstitutionalFooter } from "./InstitutionalFooter";
 import { InstitutionalHeader } from "./InstitutionalHeader";
 import { MobileNav } from "./MobileNav";
 import { SidebarNav } from "./SidebarNav";
+import type { MembershipStatus, UserRole } from "@/lib/firebase/userProfile";
+
+export type PortalProfileData = {
+  displayName: string;
+  email: string;
+  role: UserRole;
+  membershipStatus: MembershipStatus;
+};
 
 type AppShellProps = {
   children: React.ReactNode;
+  profileData?: PortalProfileData | null;
 };
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, profileData }: AppShellProps) {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   useEffect(() => {
@@ -30,12 +39,19 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="min-h-screen bg-[#f8f6ee] text-[#0f172a]">
-      <InstitutionalHeader onMenuToggle={() => setMobileNavOpen(true)} />
-      <MobileNav isOpen={mobileNavOpen} onClose={() => setMobileNavOpen(false)} />
+      <InstitutionalHeader
+        onMenuToggle={() => setMobileNavOpen(true)}
+        profileData={profileData}
+      />
+      <MobileNav
+        isOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        role={profileData?.role}
+      />
 
       <div className="mx-auto flex max-w-7xl flex-col lg:flex-row">
         <aside className="hidden w-72 shrink-0 lg:block">
-          <SidebarNav />
+          <SidebarNav role={profileData?.role} />
         </aside>
 
         <main className="flex-1 bg-[#f8f6ee] px-4 py-4 sm:px-6 sm:py-6 lg:px-8 lg:py-8">

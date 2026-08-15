@@ -2,15 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { adminNavigation, primaryNavigation } from "./navigation";
+import { adminNavigation, executiveNavigation, primaryNavigation } from "./navigation";
+import type { UserRole } from "@/lib/firebase/userProfile";
 
 type MobileNavProps = {
   isOpen: boolean;
   onClose: () => void;
+  role?: UserRole | null;
 };
 
-export function MobileNav({ isOpen, onClose }: MobileNavProps) {
+export function MobileNav({ isOpen, onClose, role }: MobileNavProps) {
   const pathname = usePathname();
+  const isExecutive = role === "executive" || role === "admin";
+  const isAdmin = role === "admin";
 
   if (!isOpen) {
     return null;
@@ -52,27 +56,53 @@ export function MobileNav({ isOpen, onClose }: MobileNavProps) {
             </ul>
           </div>
 
-          <div className="rounded-[1.25rem] border border-[#d8d0bc] bg-[#001f3f] p-4 text-[#f5f1de]">
-            <p className="text-[0.66rem] font-semibold uppercase tracking-[0.3em] text-[#d4af37]">
-              Administrative
-            </p>
-            <ul className="mt-3 space-y-1">
-              {adminNavigation.map((item) => {
-                const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
-                return (
-                  <li key={item.label}>
-                    <Link
-                      href={item.href}
-                      onClick={onClose}
-                      className={`flex rounded-2xl px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${isActive ? "bg-white/10 text-white" : "text-[#f5f1de] hover:bg-white/10"}`}
-                    >
-                      {item.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+          {isExecutive && (
+            <div className="rounded-[1.25rem] border border-[#d8d0bc] bg-[#001f3f]/5 p-4">
+              <p className="text-[0.66rem] font-semibold uppercase tracking-[0.3em] text-[#001f3f]">
+                Executive
+              </p>
+              <ul className="mt-3 space-y-1">
+                {executiveNavigation.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+                  return (
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        onClick={onClose}
+                        className={`flex rounded-2xl px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${isActive ? "bg-[#f5f1de] text-[#001f3f]" : "text-[#243449] hover:bg-[#f5f1de] hover:text-[#001f3f]"}`}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
+
+          {isAdmin && (
+            <div className="rounded-[1.25rem] border border-[#d8d0bc] bg-[#001f3f] p-4 text-[#f5f1de]">
+              <p className="text-[0.66rem] font-semibold uppercase tracking-[0.3em] text-[#d4af37]">
+                Administrative
+              </p>
+              <ul className="mt-3 space-y-1">
+                {adminNavigation.map((item) => {
+                  const isActive = pathname === item.href || (item.href !== "/" && pathname.startsWith(item.href));
+                  return (
+                    <li key={item.label}>
+                      <Link
+                        href={item.href}
+                        onClick={onClose}
+                        className={`flex rounded-2xl px-3 py-2 text-sm font-medium transition focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37] ${isActive ? "bg-white/10 text-white" : "text-[#f5f1de] hover:bg-white/10"}`}
+                      >
+                        {item.label}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </div>

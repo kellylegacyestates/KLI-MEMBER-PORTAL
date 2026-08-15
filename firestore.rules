@@ -5,44 +5,45 @@ service cloud.firestore {
 
     // -----------------------------------------------------------------------
     // users/{uid}
+    //
+    // Each document stores a member's profile including their role,
+    // account status, and membership status.
     // -----------------------------------------------------------------------
     match /users/{uid} {
 
       // A user may read only their own profile document.
+      // Administrators should use the Firebase Console or a server-side
+      // function to read other profiles; no broad cross-user read is granted
+      // here for the client SDK.
       allow read: if request.auth != null && request.auth.uid == uid;
 
-      // CREATE: own authenticated user only; role must be "member" and
-      // membershipStatus must be "pending".
+      // CREATE: allowed only by the document's own authenticated user, and
+      // only with safe initial values.  Role must be "member", accountStatus
+      // must be "active", and membershipStatus must be "pending".  This
+      // prevents a newly registered user from self-assigning elevated
+      // privileges or bypassing membership approval.
       allow create: if request.auth != null
                     && request.auth.uid == uid
                     && request.resource.data.uid == uid
                     && request.resource.data.role == "member"
+                    && request.resource.data.accountStatus == "active"
                     && request.resource.data.membershipStatus == "pending";
 
-      // UPDATE: own authenticated user only, with strict key and value
-      // constraints.
+      // UPDATE: allowed only by the document's own authenticated user, with
+      // strict constraints on what they may change.
       //
-      // The incoming document must contain EXACTLY these keys:
-      //   uid, email, displayName, institution, membershipPurpose,
-      //   role, membershipStatus, createdAt, updatedAt
-      //
-      // No additional keys are permitted.
-      //
-      // Protected fields must remain identical to their current stored values.
-      // Members may update only displayName, institution, membershipPurpose,
-      // and updatedAt.
+      // Only the four explicitly listed fields may be touched in any write.
+      // This prevents clients from adding arbitrary new fields and ensures
+      // that protected fields (role, accountStatus, membershipStatus, uid,
+      // email, createdAt) can never be modified or deleted by the member.
       allow update: if request.auth != null
                     && request.auth.uid == uid
-
-                    // Exact key set: no extra fields allowed.
-                    && request.resource.data.keys().toSet() == [
-                         "uid", "email", "displayName", "institution",
-                         "membershipPurpose", "role", "membershipStatus",
-                         "createdAt", "updatedAt"
-                       ].toSet()
-
-                    // Protected fields must not change.
+                    // Only these four keys may appear in the diff.
+                    && request.resource.data.diff(resource.data).affectedKeys()
+                         .hasOnly(['displayName', 'institution', 'membershipPurpose', 'updatedAt'])
+                    // Protected fields must remain identical to their stored values.
                     && request.resource.data.role == resource.data.role
+                    && request.resource.data.accountStatus == resource.data.accountStatus
                     && request.resource.data.membershipStatus == resource.data.membershipStatus
                     && request.resource.data.uid == resource.data.uid
                     && request.resource.data.email == resource.data.email

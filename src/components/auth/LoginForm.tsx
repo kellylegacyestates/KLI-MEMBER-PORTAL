@@ -3,8 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
+import { safeRedirectTarget } from "@/lib/auth/redirect";
 
 const getFriendlyAuthError = (code: string) => {
   switch (code) {
@@ -13,9 +14,9 @@ const getFriendlyAuthError = (code: string) => {
     case "auth/user-disabled":
       return "This member account has been disabled.";
     case "auth/user-not-found":
-      return "We could not find an account with that email.";
+      return "The sign-in details are invalid. Please try again.";
     case "auth/wrong-password":
-      return "The password you entered is incorrect.";
+      return "The sign-in details are invalid. Please try again.";
     case "auth/invalid-credential":
       return "The sign-in details are invalid. Please try again.";
     case "auth/too-many-requests":
@@ -55,12 +56,41 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      await signInWithEmailAndPassword(auth, sanitizedEmail, password);
-      const safeRedirectTarget = redirectTarget.startsWith("/") ? redirectTarget : "/dashboard";
-      router.replace(safeRedirectTarget);
+      const credential = await signInWithEmailAndPassword(
+        auth,
+        sanitizedEmail,
+        password
+      );
+      const idToken = await credential.user.getIdToken();
+      const sessionResponse = await fetch("/api/auth/session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        cache: "no-store",
+        body: JSON.stringify({ idToken }),
+      });
+
+      if (!sessionResponse.ok) {
+        try {
+          await signOut(auth);
+        } catch {
+          // Best-effort cleanup; the user should not keep a client-only login.
+        }
+
+        setError("We could not complete your sign-in. Please try again.");
+        return;
+      }
+
+      const safeRedirect = safeRedirectTarget(redirectTarget);
+      router.replace(safeRedirect);
     } catch (signInError) {
-      const message = signInError instanceof Error && "code" in signInError ? String(signInError.code) : "";
-      setError(getFriendlyAuthError(message));
+      if (!(signInError instanceof Error) || !("code" in signInError)) {
+        setError("We could not complete your sign-in. Please try again.");
+        return;
+      }
+
+      setError(getFriendlyAuthError(String(signInError.code)));
     } finally {
       setIsSubmitting(false);
     }

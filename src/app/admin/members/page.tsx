@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
+import { AdminRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Members",
@@ -14,13 +15,15 @@ const rows = [
   { name: "Mina Patel", institution: "National Archives", status: "Active", access: "Full" },
 ];
 
-export default function AdminMembersPage() {
+export default async function AdminMembersPage() {
   return (
-    <AppShell>
-      <div className="space-y-8">
-        <SectionHeader eyebrow="Administration" title="Members" description="Manage institutional accounts and review access for member groups." />
-        <DataTable title="Member accounts" columns={[{ key: "name", header: "Name" }, { key: "institution", header: "Institution" }, { key: "status", header: "Status" }, { key: "access", header: "Access" }]} rows={rows} />
-      </div>
-    </AppShell>
+    <AdminRouteGuard pathname="/admin/members">
+      <PortalShell>
+        <div className="space-y-8">
+          <SectionHeader eyebrow="Administration" title="Members" description="Manage institutional accounts and review access for member groups." />
+          <DataTable title="Member accounts" columns={[{ key: "name", header: "Name" }, { key: "institution", header: "Institution" }, { key: "status", header: "Status" }, { key: "access", header: "Access" }]} rows={rows} />
+        </div>
+      </PortalShell>
+    </AdminRouteGuard>
   );
 }

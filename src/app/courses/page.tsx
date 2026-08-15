@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import { AppShell } from "@/components/layout/AppShell";
+import { PortalShell } from "@/components/layout/PortalShell";
+import { MemberRouteGuard } from "@/components/auth/ServerRouteGuards";
 
 export const metadata: Metadata = {
   title: "Courses",
@@ -15,19 +15,19 @@ const courses = [
   { title: "Policy and Governance", description: "A structured study of governing principles, decision records, and policy stewardship.", meta: "Scheduled" },
 ];
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
   return (
-    <ProtectedRoute>
-      <AppShell>
-        <div className="space-y-8">
-          <SectionHeader eyebrow="Courses" title="Course catalog" description="A carefully curated set of professional learning experiences for member advancement." />
-          <div className="grid gap-6 md:grid-cols-3">
-            {courses.map((course) => (
-              <InfoCard key={course.title} title={course.title} description={course.description} meta={course.meta} />
-            ))}
+    <MemberRouteGuard pathname="/courses">
+      <PortalShell>
+          <div className="space-y-8">
+            <SectionHeader eyebrow="Courses" title="Course catalog" description="A carefully curated set of professional learning experiences for member advancement." />
+            <div className="grid gap-6 md:grid-cols-3">
+              {courses.map((course) => (
+                <InfoCard key={course.title} title={course.title} description={course.description} meta={course.meta} />
+              ))}
+            </div>
           </div>
-        </div>
-      </AppShell>
-    </ProtectedRoute>
+        </PortalShell>
+    </MemberRouteGuard>
   );
 }

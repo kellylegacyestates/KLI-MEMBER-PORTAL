@@ -2,8 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { adminNavigation, primaryNavigation } from "./navigation";
+import { adminNavigation, executiveNavigation, primaryNavigation } from "./navigation";
+import type { UserRole } from "@/lib/firebase/userProfile";
+
+type SidebarNavProps = {
+  role?: UserRole | null;
+};
 
 function NavItem({ label, href }: { label: string; href: string }) {
   const pathname = usePathname();
@@ -21,8 +25,9 @@ function NavItem({ label, href }: { label: string; href: string }) {
   );
 }
 
-export function SidebarNav() {
-  const { isAdmin } = useAuth();
+export function SidebarNav({ role }: SidebarNavProps) {
+  const isExecutive = role === "executive" || role === "admin";
+  const isAdmin = role === "admin";
 
   return (
     <nav className="h-full border-r border-[#d8d0bc] bg-[#f8f6ee] p-4 lg:p-6">
@@ -38,6 +43,20 @@ export function SidebarNav() {
             <NavItem key={item.label} label={item.label} href={item.href} />
           ))}
         </ul>
+
+        {/* Executive section — rendered only for executive and admin profiles. */}
+        {isExecutive && (
+          <div className="mt-6 rounded-[1.25rem] border border-[#d8d0bc] bg-[#001f3f]/5 p-4">
+            <p className="text-[0.66rem] font-semibold uppercase tracking-[0.3em] text-[#001f3f]">
+              Executive
+            </p>
+            <ul className="mt-3 space-y-1">
+              {executiveNavigation.map((item) => (
+                <NavItem key={item.label} label={item.label} href={item.href} />
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* Administrator section — rendered only for confirmed admin profiles. */}
         {isAdmin && (
