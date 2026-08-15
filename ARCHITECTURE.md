@@ -17,6 +17,18 @@ The KLI Member Portal is an institutional learning platform built on Next.js 15 
 
 ## Architecture Layers
 
+### Publications Registry
+
+The Phase 1 Publications Registry uses the top-level Firestore `publications`
+collection as the authoritative institutional record. Server Components call
+the server-only data-access layer in `src/lib/publications.ts`; public reads are
+restricted to records with explicit public visibility, while administrative
+mutations verify the existing Firebase session and administrator profile.
+Public routes are `/publications` and `/publications/[slug]`. Administrative
+routes remain protected at `/admin/publications` and
+`/admin/publications/[id]`. Version and distribution history stays attached to
+one stable publication ID rather than creating separate publication records.
+
 ### 1. Presentation Layer (Client)
 
 ```

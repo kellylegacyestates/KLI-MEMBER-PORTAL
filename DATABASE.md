@@ -1,8 +1,50 @@
 # KLI Member Portal - Database Schema & RLS Policies
 
 ## Overview
+The deployed application uses Firestore with Firebase Security Rules. Historical
+PostgreSQL/Supabase planning material remains below for context; the Firestore
+collections documented in this section are authoritative for implemented features.
 
-The database uses PostgreSQL via Supabase with comprehensive Row Level Security (RLS) policies. All user data is organized by tenant (member organization) and role-based access.
+## Firestore Collections
+
+### `publications/{publicationId}`
+
+The `publications` collection is the canonical KLI Publications Registry. One
+document represents one institutional publication across all versions and
+distribution channels.
+
+- **Document ID policy:** use the stable canonical KLI publication ID (for
+  example, `KLI-RPS-2026-01`), never a random ID for the authoritative record.
+  The document's `id` field must equal its Firestore document ID.
+- **Identity and discovery:** `slug`, `title`, optional `subtitle`, `series`,
+  `publicationType`, `status`, `publicationDate`, `authors`, `institution`,
+  `abstract`, and `keywords`.
+- **Visibility:** `visibility` is exactly `public` or `private`. Browser reads
+  are allowed without authentication only when it is `public`; administrators
+  may read either state.
+- **Current version:** `currentVersion` points to a matching entry in
+  `versions`. The embedded version history records version status, public
+  eligibility, filename, optional verified file URL, timestamp, and notes.
+  Prior entries are preserved. The type boundary permits moving this history
+  to a subcollection in a later phase without changing route-facing records.
+- **Identifiers:** `identifiers` stores ORCID, SSRN Abstract ID, Zenodo DOI,
+  institutional DOI, and ISBN as identifiers. Identifiers do not imply a
+  verified external URL.
+- **Distribution:** `distribution` separately tracks SSRN, Zenodo, website,
+  and journal status plus optional names, identifiers, and verified URLs.
+- **Rights and citation:** `rights` stores copyright and license;
+  `citation.preferred` stores the authoritative citation.
+- **CTA:** `cta` stores a label and optional related-study URL.
+- **Timestamps:** `createdAt` and `updatedAt` are Firestore timestamps.
+- **Write restrictions:** only active users whose existing `users/{uid}`
+  profile has role `admin` may create, update, or delete through the client
+  rules. Application mutations additionally verify the trusted server session
+  with `requireAdmin()` and use the Firebase Admin data-access layer.
+
+The initial record can be created without overwriting an existing canonical
+record by running `corepack pnpm seed:publications` from an authorized
+workstation with Application Default Credentials and
+`FIREBASE_ADMIN_PROJECT_ID` configured.
 
 ## Database Schema
 

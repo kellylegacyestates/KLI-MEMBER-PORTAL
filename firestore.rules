@@ -2,6 +2,12 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isAdmin() {
+      return request.auth != null
+             && exists(/databases/$(database)/documents/users/$(request.auth.uid))
+             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin"
+             && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.accountStatus == "active";
+    }
 
     // -----------------------------------------------------------------------
     // users/{uid}
@@ -57,6 +63,19 @@ service cloud.firestore {
     // cannot read, alter, or delete the append-only security record.
     match /auditEvents/{eventId} {
       allow read, write: if false;
+    }
+
+    // The canonical publication document is publicly readable only when its
+    // visibility is explicit. Administrative writes reuse the existing user
+    // profile role and account-status authority and otherwise fail closed.
+    match /publications/{publicationId} {
+      allow read: if resource.data.visibility == "public" || isAdmin();
+      allow create: if isAdmin()
+                    && request.resource.data.id == publicationId;
+      allow update: if isAdmin()
+                    && request.resource.data.id == publicationId
+                    && resource.data.id == publicationId;
+      allow delete: if isAdmin();
     }
 
     // -----------------------------------------------------------------------

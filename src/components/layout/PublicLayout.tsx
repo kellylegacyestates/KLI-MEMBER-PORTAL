@@ -12,6 +12,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
           </div>
           <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Public navigation">
             <Link href="/" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Overview</Link>
+            <Link href="/publications" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Publications</Link>
             <Link href="/login" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Login</Link>
             <Link href="/register" className="rounded-full px-3 py-2 transition hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#d4af37]">Register</Link>
           </nav>
