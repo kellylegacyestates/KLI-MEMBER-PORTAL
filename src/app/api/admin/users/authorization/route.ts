@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
         actorUid: access.user.uid,
         targetUid: uid,
         oldValue: { sessionsRevoked: false },
-        newValue: { sessionsRevoked: false },
+        newValue: { sessionsRevoked: true },
         reason: `Automatic revocation after authorization update: ${reason}`,
         outcome: "failure",
       });
