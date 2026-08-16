@@ -5,18 +5,19 @@ const TRUSTED_PRODUCTION_ORIGINS = new Set([
   "https://kli-member-portal--legacy-ai-production.us-central1.hosted.app",
 ]);
 
-function firstHeaderValue(value: string): string {
-  return value.split(",", 1)[0].trim();
+function headerValues(value: string): string[] {
+  return value.split(",").map((part) => part.trim());
 }
 
-function forwardedOrigin(headers: Headers): string | null | undefined {
+function forwardedOrigins(headers: Headers): string[] | null | undefined {
   const forwarded = headers.get("forwarded");
   if (!forwarded) {
     return undefined;
   }
 
-  const parameters = new Map(
-    firstHeaderValue(forwarded)
+  const origins = headerValues(forwarded).map((element) => {
+    const parameters = new Map(
+      element
       .split(";")
       .map((part) => part.trim().split("=", 2))
       .filter((part): part is [string, string] => part.length === 2)
@@ -24,12 +25,19 @@ function forwardedOrigin(headers: Headers): string | null | undefined {
         name.toLowerCase(),
         value.replace(/^"|"$/g, ""),
       ])
-  );
+    );
+    const proto = parameters.get("proto");
+    const host = parameters.get("host");
 
-  return originFromProxyValues(parameters.get("proto"), parameters.get("host"));
+    return proto && host ? originFromProxyValues(proto, host) : undefined;
+  });
+
+  return origins.includes(null)
+    ? null
+    : origins.filter((origin): origin is string => origin !== undefined);
 }
 
-function xForwardedOrigin(headers: Headers): string | null | undefined {
+function xForwardedOrigins(headers: Headers): string[] | null | undefined {
   const host = headers.get("x-forwarded-host");
   const proto = headers.get("x-forwarded-proto");
 
@@ -37,10 +45,32 @@ function xForwardedOrigin(headers: Headers): string | null | undefined {
     return undefined;
   }
 
-  return originFromProxyValues(
-    proto ? firstHeaderValue(proto) : undefined,
-    host ? firstHeaderValue(host) : undefined
+  if (!host || !proto) {
+    return null;
+  }
+
+  const hosts = headerValues(host);
+  const protos = headerValues(proto);
+  const count = Math.max(hosts.length, protos.length);
+
+  if (
+    hosts.length !== protos.length &&
+    hosts.length !== 1 &&
+    protos.length !== 1
+  ) {
+    return null;
+  }
+
+  const origins = Array.from({ length: count }, (_, index) =>
+    originFromProxyValues(
+      protos.length === 1 ? protos[0] : protos[index],
+      hosts.length === 1 ? hosts[0] : hosts[index]
+    )
   );
+
+  return origins.includes(null)
+    ? null
+    : origins.filter((origin): origin is string => origin !== null);
 }
 
 function originFromProxyValues(
@@ -96,19 +126,19 @@ export function isTrustedOrigin(request: NextRequest) {
     return false;
   }
 
-  const forwarded = forwardedOrigin(request.headers);
-  const xForwarded = xForwardedOrigin(request.headers);
+  const forwarded = forwardedOrigins(request.headers);
+  const xForwarded = xForwardedOrigins(request.headers);
 
   if (forwarded === null || xForwarded === null) {
     return false;
   }
 
-  const proxyOrigins = [forwarded, xForwarded].filter(
-    (value): value is string => value !== undefined
+  const proxyOriginFamilies = [forwarded, xForwarded].filter(
+    (value): value is string[] => value !== undefined && value.length > 0
   );
 
   return (
-    proxyOrigins.length > 0 &&
-    proxyOrigins.every((proxyOrigin) => proxyOrigin === origin)
+    proxyOriginFamilies.length > 0 &&
+    proxyOriginFamilies.every((proxyOrigins) => proxyOrigins.includes(origin))
   );
 }

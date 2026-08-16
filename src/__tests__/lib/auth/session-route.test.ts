@@ -30,6 +30,8 @@ function request() {
 }
 
 describe("POST /api/auth/session rate limiting", () => {
+  const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
   beforeEach(() => {
     vi.clearAllMocks();
     mockRateLimit.mockResolvedValue({ allowed: true });
@@ -92,5 +94,26 @@ describe("POST /api/auth/session rate limiting", () => {
     });
     expect(createSessionCookie).not.toHaveBeenCalled();
     expect(response.headers.get("set-cookie")).toContain("__session=;");
+    expect(warn).toHaveBeenCalledWith({
+      reason: "SESSION_REJECT_EMAIL_UNVERIFIED",
+    });
+  });
+
+  it("logs only a stable reason code when origin validation rejects", async () => {
+    const response = await POST(
+      new NextRequest("http://internal-cloud-run:8080/api/auth/session", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: "https://evil.example",
+        },
+        body: JSON.stringify({ idToken: "must-not-be-logged" }),
+      })
+    );
+
+    expect(response.status).toBe(403);
+    expect(warn).toHaveBeenCalledWith({ reason: "SESSION_REJECT_ORIGIN" });
+    expect(JSON.stringify(warn.mock.calls)).not.toContain("must-not-be-logged");
+    expect(mockRateLimit).not.toHaveBeenCalled();
   });
 });

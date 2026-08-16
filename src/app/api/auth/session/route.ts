@@ -8,6 +8,18 @@ export const runtime = "nodejs";
 
 const RECENT_SIGN_IN_WINDOW_MS = 5 * 60 * 1000;
 
+type SessionRejectionReason =
+  | "SESSION_REJECT_ORIGIN"
+  | "SESSION_REJECT_RATE_LIMIT"
+  | "SESSION_REJECT_MISSING_TOKEN"
+  | "SESSION_REJECT_INVALID_TOKEN"
+  | "SESSION_REJECT_EMAIL_UNVERIFIED"
+  | "SESSION_REJECT_UNKNOWN";
+
+function logSessionRejection(reason: SessionRejectionReason) {
+  console.warn({ reason });
+}
+
 function clearSessionCookie(response: NextResponse) {
   response.cookies.set(getSessionCookieName(), "", {
     ...getSessionCookieOptions(0),
@@ -17,12 +29,14 @@ function clearSessionCookie(response: NextResponse) {
 
 export async function POST(request: NextRequest) {
   if (!isTrustedOrigin(request)) {
+    logSessionRejection("SESSION_REJECT_ORIGIN");
     return NextResponse.json({ ok: false }, { status: 403 });
   }
 
   try {
     const rateLimit = await consumeSessionRateLimit(request);
     if (!rateLimit.allowed) {
+      logSessionRejection("SESSION_REJECT_RATE_LIMIT");
       return NextResponse.json(
         { ok: false, error: "too_many_requests" },
         {
@@ -32,6 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch {
+    logSessionRejection("SESSION_REJECT_UNKNOWN");
     return NextResponse.json({ ok: false }, { status: 503 });
   }
 
@@ -41,33 +56,54 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as { idToken?: unknown };
     idToken = typeof body.idToken === "string" ? body.idToken.trim() : "";
   } catch {
+    logSessionRejection("SESSION_REJECT_MISSING_TOKEN");
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
   if (!idToken) {
+    logSessionRejection("SESSION_REJECT_MISSING_TOKEN");
     return NextResponse.json({ ok: false }, { status: 400 });
   }
 
+  let auth;
   try {
-    const auth = getFirebaseAdminAuth();
-    const decodedToken = await auth.verifyIdToken(idToken, true);
+    auth = getFirebaseAdminAuth();
+  } catch {
+    logSessionRejection("SESSION_REJECT_UNKNOWN");
+    const response = NextResponse.json({ ok: false }, { status: 401 });
+    clearSessionCookie(response);
+    return response;
+  }
 
-    if (decodedToken.email_verified !== true) {
-      const response = NextResponse.json(
-        { ok: false, error: "email_verification_required" },
-        { status: 403 }
-      );
-      clearSessionCookie(response);
-      return response;
-    }
+  let decodedToken;
+  try {
+    decodedToken = await auth.verifyIdToken(idToken, true);
+  } catch {
+    logSessionRejection("SESSION_REJECT_INVALID_TOKEN");
+    const response = NextResponse.json({ ok: false }, { status: 401 });
+    clearSessionCookie(response);
+    return response;
+  }
 
-    const authTimeMs = decodedToken.auth_time ? decodedToken.auth_time * 1000 : 0;
-    if (!authTimeMs || Date.now() - authTimeMs > RECENT_SIGN_IN_WINDOW_MS) {
-      const response = NextResponse.json({ ok: false }, { status: 401 });
-      clearSessionCookie(response);
-      return response;
-    }
+  if (decodedToken.email_verified !== true) {
+    logSessionRejection("SESSION_REJECT_EMAIL_UNVERIFIED");
+    const response = NextResponse.json(
+      { ok: false, error: "email_verification_required" },
+      { status: 403 }
+    );
+    clearSessionCookie(response);
+    return response;
+  }
 
+  const authTimeMs = decodedToken.auth_time ? decodedToken.auth_time * 1000 : 0;
+  if (!authTimeMs || Date.now() - authTimeMs > RECENT_SIGN_IN_WINDOW_MS) {
+    logSessionRejection("SESSION_REJECT_INVALID_TOKEN");
+    const response = NextResponse.json({ ok: false }, { status: 401 });
+    clearSessionCookie(response);
+    return response;
+  }
+
+  try {
     const sessionCookie = await auth.createSessionCookie(idToken, {
       expiresIn: getSessionDurationMs(),
     });
@@ -80,6 +116,7 @@ export async function POST(request: NextRequest) {
     );
     return response;
   } catch {
+    logSessionRejection("SESSION_REJECT_UNKNOWN");
     const response = NextResponse.json({ ok: false }, { status: 401 });
     clearSessionCookie(response);
     return response;

@@ -39,6 +39,43 @@ describe("trusted request origins", () => {
     ).toBe(true);
   });
 
+  it("accepts App Hosting proxy chains that include the browser origin", () => {
+    expect(
+      isTrustedOrigin(
+        request(customOrigin, {
+          forwarded:
+            "for=192.0.2.1;proto=http;host=internal-cloud-run:8080, for=192.0.2.2;proto=https;host=access.kellylegacyestates.com",
+          "x-forwarded-host":
+            "access.kellylegacyestates.com, internal-cloud-run:8080",
+          "x-forwarded-proto": "https, http",
+        })
+      )
+    ).toBe(true);
+  });
+
+  it("accepts one forwarded protocol applied across a host chain", () => {
+    expect(
+      isTrustedOrigin(
+        request(canonicalOrigin, {
+          "x-forwarded-host": `internal-cloud-run, ${canonicalOrigin.slice("https://".length)}`,
+          "x-forwarded-proto": "https",
+        })
+      )
+    ).toBe(true);
+  });
+
+  it("ignores Forwarded hops without optional host metadata", () => {
+    expect(
+      isTrustedOrigin(
+        request(customOrigin, {
+          forwarded: "for=192.0.2.1;proto=https",
+          "x-forwarded-host": "access.kellylegacyestates.com",
+          "x-forwarded-proto": "https",
+        })
+      )
+    ).toBe(true);
+  });
+
   it("rejects a mismatched hostile origin", () => {
     expect(
       isTrustedOrigin(
@@ -96,6 +133,19 @@ describe("trusted request origins", () => {
           forwarded:
             "for=192.0.2.1;proto=https;host=access.kellylegacyestates.com",
           "x-forwarded-host": "evil.example",
+          "x-forwarded-proto": "https",
+        })
+      )
+    ).toBe(false);
+  });
+
+  it("rejects a proxy family whose chain omits the browser origin", () => {
+    expect(
+      isTrustedOrigin(
+        request(customOrigin, {
+          forwarded:
+            "for=192.0.2.1;proto=https;host=access.kellylegacyestates.com",
+          "x-forwarded-host": "internal-cloud-run, evil.example",
           "x-forwarded-proto": "https",
         })
       )
