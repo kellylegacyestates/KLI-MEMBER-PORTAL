@@ -50,6 +50,12 @@ describe("trusted request origins", () => {
     ).toBe(false);
   });
 
+  it("rejects an unlisted same-origin host outside production", () => {
+    expect(
+      isTrustedOrigin(request("http://internal-cloud-run:8080"))
+    ).toBe(false);
+  });
+
   it("rejects a missing origin", () => {
     expect(
       isTrustedOrigin(

@@ -61,6 +61,22 @@ function originFromProxyValues(
   }
 }
 
+function isTrustedDevelopmentOrigin(origin: string): boolean {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  try {
+    const url = new URL(origin);
+    return (
+      ["http:", "https:"].includes(url.protocol) &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function isTrustedOrigin(request: NextRequest) {
   const origin = request.headers.get("origin");
 
@@ -70,7 +86,7 @@ export function isTrustedOrigin(request: NextRequest) {
 
   if (
     origin === request.nextUrl.origin &&
-    (process.env.NODE_ENV !== "production" ||
+    (isTrustedDevelopmentOrigin(origin) ||
       TRUSTED_PRODUCTION_ORIGINS.has(origin))
   ) {
     return true;
@@ -80,15 +96,19 @@ export function isTrustedOrigin(request: NextRequest) {
     return false;
   }
 
-  const proxyOrigins = [
-    forwardedOrigin(request.headers),
-    xForwardedOrigin(request.headers),
-  ].filter((value): value is string | null => value !== undefined);
+  const forwarded = forwardedOrigin(request.headers);
+  const xForwarded = xForwardedOrigin(request.headers);
+
+  if (forwarded === null || xForwarded === null) {
+    return false;
+  }
+
+  const proxyOrigins = [forwarded, xForwarded].filter(
+    (value): value is string => value !== undefined
+  );
 
   return (
     proxyOrigins.length > 0 &&
-    proxyOrigins.every(
-      (proxyOrigin) => proxyOrigin !== null && proxyOrigin === origin
-    )
+    proxyOrigins.every((proxyOrigin) => proxyOrigin === origin)
   );
 }
