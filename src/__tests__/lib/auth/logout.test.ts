@@ -39,10 +39,8 @@ describe("logoutUser", () => {
   });
 
   it("fails closed and preserves the client session when server logout fails", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue({ ok: false })
-    );
+    const fetch = vi.fn().mockResolvedValue({ ok: false });
+    vi.stubGlobal("fetch", fetch);
 
     await expect(logoutUser()).rejects.toThrow("Logout could not be completed.");
     expect(fetch).toHaveBeenCalledTimes(2);
