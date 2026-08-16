@@ -224,6 +224,10 @@ kli-member-portal/
 - **[SETUP.md](./SETUP.md)** - Development environment setup and deployment
 - **[README.md](./README.md)** - This file
 
+## Technical Governance
+
+The principal technical-governance reference is **[KLI-TGR-2026-001 — Kelly Legacy Institute Member Portal: Secure Digital Identity, Access Governance, and Institutional Knowledge Infrastructure](./docs/governance/KLI-TGR-2026-001.md)**. It remains **Draft for Institutional Review**; see the linked verification register and findings for evidence boundaries and unresolved controls.
+
 ## API Endpoints
 
 ### Authentication
