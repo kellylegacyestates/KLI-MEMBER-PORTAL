@@ -5,22 +5,13 @@ async function clearServerSessionCookie() {
   const response = await fetch("/api/auth/logout", {
     method: "POST",
     cache: "no-store",
+    credentials: "same-origin",
   });
 
   return response.ok;
 }
 
 export async function logoutUser() {
-  let clientLogoutFailed = false;
-
-  if (auth) {
-    try {
-      await signOut(auth);
-    } catch {
-      clientLogoutFailed = true;
-    }
-  }
-
   let serverLogoutFailed = false;
 
   try {
@@ -33,7 +24,15 @@ export async function logoutUser() {
     serverLogoutFailed = true;
   }
 
-  if (clientLogoutFailed || serverLogoutFailed) {
+  if (serverLogoutFailed) {
     throw new Error("Logout could not be completed.");
+  }
+
+  if (auth) {
+    try {
+      await signOut(auth);
+    } catch {
+      console.warn({ reason: "LOGOUT_CLIENT_SIGNOUT_FAILED" });
+    }
   }
 }
