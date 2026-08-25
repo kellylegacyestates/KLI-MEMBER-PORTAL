@@ -29,6 +29,7 @@ export type BriefingEntry = {
   title: string;
   date: string;
   summary: string;
+  href?: string;
 };
 
 export type SearchIndexItem = {
@@ -265,9 +266,12 @@ export const publicationEntries: PublicationEntry[] = [
 ];
 
 export const briefingEntries: BriefingEntry[] = [
-  { title: "Weekly Fiduciary Briefing", date: "July 18, 2026", summary: "A concise review of governance concerns, administrative record practice, and prudent oversight priorities." },
-  { title: "Administrative Procedure Review", date: "July 11, 2026", summary: "Practical guidance for members preparing for the next seminar and case review cycle." },
-  { title: "Member Communications Notice", date: "July 4, 2026", summary: "Institutional updates on curriculum pacing, publication releases, and service availability." },
+  {
+    title: "Federal Authority Alert — Trump v. California",
+    date: "August 24, 2026",
+    href: "/briefings/trump-v-california",
+    summary: "Supreme Court stay decision addressing Article III standing, ripeness, and the distinction between executive directives, agency rulemaking, and reviewable regulatory action.",
+  },
 ];
 
 export const downloadEntries = [

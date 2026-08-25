@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { PortalShell } from "@/components/layout/PortalShell";
 import { SectionHeader } from "@/components/ui/SectionHeader";
 import { InfoCard } from "@/components/ui/InfoCard";
@@ -21,9 +22,28 @@ export default async function BriefingsPage() {
               description="Structured communications curated for members and administrators with a professional institutional tone."
             />
             <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-              {briefingEntries.map((briefing) => (
-                <InfoCard key={briefing.title} title={briefing.title} description={briefing.summary} meta={briefing.date} />
-              ))}
+              {briefingEntries.map((briefing) =>
+            briefing.href ? (
+              <Link
+                key={briefing.title}
+                href={briefing.href}
+                className="block rounded-[1.5rem] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#001f3f]"
+              >
+                <InfoCard
+                  title={briefing.title}
+                  description={briefing.summary}
+                  meta={briefing.date}
+                />
+              </Link>
+            ) : (
+              <InfoCard
+                key={briefing.title}
+                title={briefing.title}
+                description={briefing.summary}
+                meta={briefing.date}
+              />
+            )
+          )}
             </div>
           </div>
         </PortalShell>
