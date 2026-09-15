@@ -1,266 +1,1128 @@
-# KLI Member Portal - Architecture
+# Kelly Legacy Institute Institutional Platform
 
-## Overview
+## System Architecture
 
-The KLI Member Portal is an institutional learning platform built on Next.js 15 with a modern, professional design language. The architecture emphasizes security, scalability, and institutional credibility.
+**Document Class:** Technical Architecture
+**System:** Kelly Legacy Institute Institutional Platform
+**Current Architecture:** Next.js + Firebase + Firestore
+**Deployment Target:** Firebase App Hosting
+**Current Program:** Phase 4 — Institutional Platform
+**Status:** Active Architecture
+**Institution:** Kelly Legacy Institute
 
-## Technology Stack
+---
 
-- **Frontend**: Next.js 15 (App Router), React 19, TypeScript (strict)
-- **Styling**: Tailwind CSS with custom institutional design system
-- **Backend**: Next.js API Routes (serverless functions)
-- **Database**: Supabase PostgreSQL with Row Level Security (RLS)
-- **Authentication**: Supabase Auth (JWT-based, email/password)
-- **Payments**: Stripe (subscriptions, webhooks)
-- **Deployment**: Vercel
-- **Package Manager**: pnpm
+## 1. Purpose
 
-## Architecture Layers
+This document defines the current technical architecture of the Kelly Legacy Institute Institutional Platform and distinguishes implemented infrastructure from planned institutional capabilities.
 
-### Publications Registry
+The platform began as the KLI Member Portal and is evolving into a broader institutional environment supporting:
 
-The Phase 1 Publications Registry uses the top-level Firestore `publications`
-collection as the authoritative institutional record. Server Components call
-the server-only data-access layer in `src/lib/publications.ts`; public reads are
-restricted to records with explicit public visibility, while administrative
-mutations verify the existing Firebase session and administrator profile.
-Public routes are `/publications` and `/publications/[slug]`. Administrative
-routes remain protected at `/admin/publications` and
-`/admin/publications/[id]`. Version and distribution history stays attached to
-one stable publication ID rather than creating separate publication records.
+- education
+- research
+- publications
+- institutional record governance
+- matter administration
+- evidence governance
+- executive review
+- document intelligence
+- Legacy Document Intelligence Engine™ integration
 
-### 1. Presentation Layer (Client)
+This document describes the architecture that governs implementation.
 
-```
-app/
-├── (auth)/           # Authentication routes (unprotected)
-│   ├── login/
-│   ├── register/
-│   ├── forgot-password/
-│   └── verify-email/
-├── (protected)/      # Member routes (protected)
-│   ├── dashboard/
-│   ├── curriculum/
-│   ├── library/
-│   ├── publications/
-│   ├── account/
-│   └── admin/        # Admin routes (role-gated)
-├── layout.tsx        # Root layout with providers
-├── page.tsx          # Public landing
-└── error.tsx         # Error boundary
-```
+Historical Supabase, PostgreSQL, Row Level Security, Vercel, and related architecture previously documented in this repository are not part of the current authoritative platform architecture unless expressly reintroduced through an approved architecture change.
 
-### 2. Business Logic Layer
+---
 
-```
-lib/
-├── auth/             # Authentication utilities
-│   ├── client.ts     # Supabase client
-│   ├── server.ts     # Server-side auth helpers
-│   └── middleware.ts # Auth middleware
-├── db/               # Database access
-│   ├── queries/      # Prepared queries
-│   ├── mutations/    # Write operations
-│   └── schema.ts     # Type definitions
-├── api/              # API client functions
-│   ├── members.ts
-│   ├── courses.ts
-│   ├── publications.ts
-│   └── payments.ts
-├── stripe/           # Stripe integration
-│   ├── client.ts
-│   ├── webhooks.ts
-│   └── validation.ts
-└── utils/            # Shared utilities
-    ├── validation.ts
-    ├── formatting.ts
-    └── constants.ts
+## 2. Institutional Control Principle
+
+> **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
+
+Technical implementation must remain subordinate to approved institutional architecture and record-governance requirements.
+
+The following distinctions must remain explicit:
+
+```text
+CURRENT IMPLEMENTATION
+≠
+PLANNED IMPLEMENTATION
+
+MACHINE FINDING
+≠
+INSTITUTIONAL DETERMINATION
+
+RECEIVED EVIDENCE
+≠
+AUTHENTICATED EVIDENCE
+
+EXTRACTED AUTHORITY
+≠
+VERIFIED AUTHORITY
 ```
 
-### 3. API Layer
+No interface, background process, persistence layer, or machine-analysis subsystem may silently redefine these distinctions.
 
-```
-app/api/
-├── auth/             # Authentication endpoints
-│   ├── login/
-│   ├── logout/
-│   ├── refresh/
-│   └── verify-email/
-├── members/          # Member operations
-│   ├── profile/
-│   ├── progress/
-│   └── [memberId]/
-├── courses/          # Course operations
-│   ├── [courseId]/lessons/
-│   ├── [courseId]/progress/
-│   └── [courseId]/materials/
-├── publications/     # Publication endpoints
-├── payments/         # Payment operations
-│   ├── subscribe/
-│   ├── cancel/
-│   └── webhook/
-└── admin/            # Admin operations
-    ├── members/
-    ├── courses/
-    └── content/
-```
+---
 
-### 4. Database Layer
+## 3. Current Technology Stack
 
-PostgreSQL with Supabase:
-- User management (via Supabase Auth)
-- Member profiles and subscription status
-- Course structure and lesson content
-- Member progress tracking
-- Publications and research materials
-- Announcements and briefings
-- Audit logs
-- Row Level Security (RLS) policies
+| Layer | Current Technology |
+|---|---|
+| Application Framework | Next.js 16 App Router |
+| UI Runtime | React 19 |
+| Language | TypeScript |
+| Styling | Tailwind CSS 4 |
+| Authentication | Firebase Authentication |
+| Trusted Server Authentication | Firebase Admin SDK |
+| Session Model | Server-side Firebase session cookies |
+| Database | Cloud Firestore |
+| Authorization Enforcement | Server-side checks + Firebase Security Rules |
+| Hosting | Firebase App Hosting |
+| Runtime | Node.js 22 |
+| Package Manager | pnpm 10 |
+| Testing | Vitest |
+| Linting | ESLint |
+| CI | GitHub Actions |
 
-### 5. Integration Layer
+The repository's `package.json` and lockfile remain authoritative for exact dependency and runtime versions.
 
-- **Supabase Auth**: JWT token management, email verification
-- **Stripe**: Subscription management, webhook processing
-- **SendGrid/Resend**: Email delivery (optional)
-- **Vercel**: Deployment and serverless compute
+---
 
-## Security Architecture
+## 4. High-Level Platform Architecture
 
-### Authentication Flow
+The institutional platform is organized into six logical layers:
 
-```
-User Input → NextAuth Validation → Supabase Auth → JWT Token → RLS Policies
-```
-
-### Authorization Strategy
-
-1. **Token-based**: JWT tokens with role claims
-2. **Database-level**: Row Level Security (RLS) on all tables
-3. **Route-level**: Middleware checks for protected routes
-4. **API-level**: Server-side validation on every API endpoint
-5. **Webhook-level**: Stripe webhook signature verification
-
-### Data Protection
-
-- All API routes validate authentication before processing
-- Database queries use parameterized statements
-- RLS policies enforce tenant isolation
-- Sensitive data is encrypted at rest (passwords, payment info)
-- HTTPS only (enforced by Vercel)
-- CSRF protection via SameSite cookies
-
-## Component Architecture
-
-### Design System
-
-```
-components/
-├── ui/               # Base UI components
-│   ├── Button.tsx
-│   ├── Card.tsx
-│   ├── Input.tsx
-│   ├── Modal.tsx
-│   └── ...
-├── layouts/          # Page layouts
-│   ├── AuthLayout.tsx
-│   ├── DashboardLayout.tsx
-│   └── AdminLayout.tsx
-├── features/         # Feature components
-│   ├── auth/
-│   ├── curriculum/
-│   ├── library/
-│   └── admin/
-└── common/           # Shared components
-    ├── Header.tsx
-    ├── Sidebar.tsx
-    └── Footer.tsx
+```text
+                    KELLY LEGACY INSTITUTE
+                              │
+                 INSTITUTIONAL PLATFORM
+                              │
+        ┌─────────────────────┼─────────────────────┐
+        │                     │                     │
+    EDUCATION              RECORDS               RESEARCH
+        │                     │                     │
+    Courses               Matters             Publications
+    Curriculum            Evidence            Authorities
+    Scholars              Deadlines           Briefings
+        │                     │                     │
+        └─────────────────────┼─────────────────────┘
+                              │
+                             LDIE
+                              │
+                    DOCUMENT INTELLIGENCE
+                              │
+                   EXECUTIVE HUMAN REVIEW
 ```
 
-### Visual Identity
+The six operational layers are:
 
-- **Color Palette**:
-  - Primary: Deep Navy (#001f3f)
-  - Accent: Gold (#D4AF37)
-  - Neutral: Parchment (#F5F1DE)
-  - Text: Dark Grey (#2C3E50)
+1. Public Institutional Layer
+2. Fiduciary Scholar Layer
+3. Institutional Record Layer
+4. Legacy Document Intelligence Engine™
+5. Executive Review Layer
+6. Administrative Layer
 
-- **Typography**:
-  - Headings: Serif fonts (Playfair Display)
-  - Body: Sans-serif (Inter)
+---
 
-- **Spacing & Grids**: 8px base unit, 12-column grid
+## 5. Public Institutional Layer
 
-## Data Flow
+The public layer may expose approved institutional resources such as:
 
-### Member Journey
+- public publications
+- public research
+- institutional briefings
+- educational material
+- institutional information
+- authentication entry points
 
-1. **Registration**: User → Auth API → Supabase Auth → User table
-2. **Subscription**: User → Stripe → Payment API → Stripe webhook → Member status update
-3. **Learning**: Member → Dashboard → Course API → Progress tracking
-4. **Content Access**: Member → Curriculum API → Lesson data (gated by subscription)
+Public availability must be explicit.
 
-### Admin Operations
+The presence of a record in Firestore does not itself make that record public.
 
-1. **Content Management**: Admin → Admin API → Database mutations → RLS validation
-2. **Member Management**: Admin → Member API → User table queries
-3. **Reports**: Admin → Dashboard → Analytics queries (aggregated, RLS-compliant)
+---
 
-## Caching Strategy
+## 6. Fiduciary Scholar Layer
 
-- **Client-side**: React Query for API response caching (5-minute TTL)
-- **Database**: Supabase connection pooling
-- **Static**: Next.js static generation for public pages
-- **API Response**: HTTP caching headers on GET endpoints
+The authenticated scholar/member experience includes or may include:
 
-## Error Handling
+- dashboard
+- curriculum
+- courses
+- publications
+- research materials
+- briefings
+- downloads
+- bookmarks
+- certificates
+- profile and account functions
 
-- **Client**: Error boundaries, user-friendly messages
-- **API**: Standardized error responses with error codes
-- **Database**: Transaction rollback on failures, audit logging
-- **Stripe**: Webhook retry logic, idempotent operations
+Scholar-facing presentation must not bypass server authorization or Firestore Security Rules.
 
-## Monitoring & Logging
+---
 
-- **Application Logs**: Vercel logs + custom structured logging
-- **Error Tracking**: Optional (Sentry integration point)
-- **Audit Logs**: Database table for all sensitive operations
-- **Performance**: Vercel Analytics
+## 7. Institutional Record Layer
 
-## Deployment Architecture
+The institutional record layer is the planned governed system of record for structured administrative and analytical matters.
 
+The canonical domain is intended to include:
+
+```text
+Organization
+Workspace
+Membership
+RoleAssignment
+Entitlement
+
+Matter
+Party
+Capacity
+Authority
+Evidence
+Communication
+Deadline
+Determination
+Review
+Remedy
+
+AuditEvent
+MachineFinding
 ```
-Git Push → GitHub → Vercel Build → Test → Deploy to Production
-                                     ↓
-                         Supabase (auto-migrated)
-                         Stripe (webhook configured)
-                         Environment variables (Vercel secrets)
+
+At the current phase, these records are architectural targets unless separately identified as already implemented.
+
+No planned collection or domain object should be represented as production-complete solely because it appears in this architecture.
+
+---
+
+## 8. Current Authentication Architecture
+
+Firebase Authentication provides identity.
+
+Firebase Admin provides trusted server-side authentication and authorization support.
+
+The current authorization chain is:
+
+```text
+IDENTITY
+    ↓
+SESSION
+    ↓
+USER PROFILE
+    ↓
+ACCOUNT STATUS
+    ↓
+MEMBERSHIP STATUS
+    ↓
+ROLE
+    ↓
+AUTHORIZED RESOURCE
 ```
 
-## Scalability Considerations
+Authorization defaults to deny where required information is:
 
-1. **Database**: Supabase auto-scaling, connection pooling
-2. **API**: Serverless functions auto-scale on Vercel
-3. **Static Content**: CDN delivery via Vercel Edge Network
-4. **File Storage**: Supabase Storage for course materials
-5. **Real-time**: Supabase Realtime for live updates (future phase)
+- missing
+- malformed
+- unknown
+- inactive
+- unauthorized
+- inconsistent
 
-## Testing Strategy
+---
 
-- **Unit Tests**: Jest (utilities, helpers)
-- **Component Tests**: React Testing Library (UI components)
-- **Integration Tests**: API routes with database
-- **E2E Tests**: Playwright (critical user journeys)
+## 9. Current Institutional Roles
 
-## Future Enhancements
+The current application recognizes these principal roles:
 
-1. **Phase 2**: Notifications, email digests, progress reminders
-2. **Phase 3**: Video hosting, interactive assessments, certificates
-3. **Phase 4**: Member forums, peer collaboration, live events
-4. **Phase 5**: Advanced analytics, member engagement metrics
-5. **Phase 6**: Mobile app, offline mode, advanced search
+```text
+member
+executive
+admin
+```
 
-## Documentation References
+### Member
 
-- [DATABASE.md](./DATABASE.md) - Database schema and RLS policies
-- [SETUP.md](./SETUP.md) - Development environment setup
-- [README.md](./README.md) - Project overview and quick start
+Active member access requires:
+
+- valid server session
+- institutional user profile
+- active account
+- active membership
+
+### Executive
+
+Executive access requires otherwise valid institutional access plus role:
+
+```text
+executive
+OR
+admin
+```
+
+### Administrator
+
+Administrative access requires:
+
+```text
+admin
+```
+
+Administrative authorization is validated by trusted server-side code.
+
+Client-rendered controls do not establish administrative authority.
+
+---
+
+## 10. Session Architecture
+
+The application uses server-issued Firebase session cookies.
+
+Session controls include:
+
+- server-side session verification
+- revocation-aware verification
+- secure logout
+- sign-out-all-devices capability
+- administrative session revocation
+- request-safety checks
+- redirect validation
+- rate-limiting support
+- login diagnostics
+- audit-event support
+
+The browser is not trusted to determine authorization state.
+
+---
+
+## 11. Current Firestore Architecture
+
+Cloud Firestore is the authoritative database for implemented platform features.
+
+Currently implemented principal collections include:
+
+```text
+users/{uid}
+auditEvents/{eventId}
+publications/{publicationId}
+```
+
+All other collections are denied by default unless explicitly authorized through Firebase Security Rules.
+
+### users
+
+The `users` collection stores institutional user-profile and access-governance information.
+
+Protected fields include:
+
+- role
+- accountStatus
+- membershipStatus
+- uid
+- email
+- createdAt
+
+Member-controlled profile updates are restricted.
+
+### auditEvents
+
+The `auditEvents` collection is reserved for trusted server-side security and governance records.
+
+Browser reads and writes are denied.
+
+### publications
+
+The `publications` collection is the canonical KLI Publications Registry.
+
+A single stable institutional publication ID represents one publication across versions and distribution channels.
+
+Public reads require explicit public visibility.
+
+Administrative writes require authorized administrative status.
+
+---
+
+## 12. Publications Registry Architecture
+
+Canonical path:
+
+```text
+publications/{publicationId}
+```
+
+The publication record may contain:
+
+- institutional ID
+- slug
+- title
+- subtitle
+- publication type
+- publication date
+- authors
+- institution
+- abstract
+- keywords
+- visibility
+- status
+- current version
+- version history
+- identifiers
+- distribution records
+- rights information
+- preferred citation
+- institutional call-to-action
+- timestamps
+
+Versions remain associated with the canonical publication identity rather than being treated as unrelated publications.
+
+---
+
+## 13. Data-Access Architecture
+
+Trusted business operations should follow this direction:
+
+```text
+UI / ROUTE
+    ↓
+APPLICATION SERVICE
+    ↓
+DOMAIN RULE
+    ↓
+DATA ACCESS / REPOSITORY
+    ↓
+FIRESTORE OR OTHER INFRASTRUCTURE
+```
+
+The user interface must not become the authoritative business-logic layer.
+
+This separation supports future:
+
+- web clients
+- mobile clients
+- enterprise integrations
+- APIs
+- background workers
+- document-processing services
+
+without requiring duplication of institutional logic.
+
+---
+
+## 14. Planned Multi-Tenant Architecture
+
+The platform is being designed to support both internal KLI operations and future external institutional customers.
+
+The planned tenancy hierarchy is:
+
+```text
+Organization
+    ↓
+Workspace
+    ↓
+Matter
+```
+
+Future governed records should be capable of carrying:
+
+```text
+organizationId
+workspaceId
+```
+
+where appropriate.
+
+This allows one platform architecture to support:
+
+- KLI internal work
+- individual professional users
+- research organizations
+- fiduciary offices
+- legal or compliance teams
+- institutional customers
+
+without forking the codebase.
+
+Multi-tenant persistence is planned architecture and is not yet represented as completed production functionality unless separately implemented and verified.
+
+---
+
+## 15. Planned Institutional Domain Architecture
+
+The institutional domain layer should remain infrastructure-independent.
+
+Expected future location:
+
+```text
+src/domain/
+```
+
+The domain layer must not depend directly upon:
+
+```text
+React
+Next.js pages
+Firebase client SDK
+Firebase Admin SDK
+Firestore
+UI components
+```
+
+Infrastructure adapters may depend upon the domain.
+
+The domain must not depend upon infrastructure adapters.
+
+---
+
+## 16. Matter Architecture
+
+The planned `Matter` record is the canonical administrative container for an institutional matter.
+
+Possible matter categories include:
+
+- administrative matters
+- rulemakings
+- public-records requests
+- litigation matters
+- regulatory matters
+- trust-governance matters
+- estate-governance matters
+- research matters
+- financial-administration matters
+- internal governance matters
+
+The planned institutional analytical sequence is:
+
+```text
+AUTHORITY
+    ↓
+CAPACITY
+    ↓
+PROCEDURE
+    ↓
+REQUEST OR ACTION
+    ↓
+ACTOR / AGENCY ACTION
+    ↓
+EVIDENCE
+    ↓
+DETERMINATION
+    ↓
+REVIEW
+    ↓
+REMEDY
+```
+
+---
+
+## 17. Planned Matter Lifecycle
+
+The planned controlled lifecycle is:
+
+```text
+DRAFT
+OPEN
+AWAITING_ACTION
+AWAITING_RESPONSE
+UNDER_REVIEW
+DETERMINED
+ON_REVIEW
+CLOSED
+ARCHIVED
+```
+
+Unknown values must fail closed.
+
+Terminal status must not be inferred from missing data.
+
+---
+
+## 18. Party and Capacity Architecture
+
+Party identity and institutional capacity are distinct concepts.
+
+A Party answers:
+
+```text
+WHO OR WHAT IS THE ACTOR?
+```
+
+Capacity answers:
+
+```text
+IN WHAT ROLE DID THAT ACTOR OPERATE?
+```
+
+A single party may possess different capacities in different matters.
+
+The system must not infer legal, fiduciary, administrative, representative, or adjudicative capacity solely from identity.
+
+---
+
+## 19. Evidence Architecture
+
+The planned evidence lifecycle distinguishes:
+
+```text
+IDENTIFIED
+REQUESTED
+RECEIVED
+AUTHENTICATED
+ADMITTED
+REJECTED
+SUPERSEDED
+PRESERVED
+```
+
+These states are intentionally distinct.
+
+```text
+RECEIVED ≠ AUTHENTICATED
+AUTHENTICATED ≠ ADMITTED
+STORED ≠ PROVEN
+```
+
+Machine processing may identify candidate evidence and integrity concerns.
+
+Machine processing does not independently authenticate evidence for institutional purposes.
+
+---
+
+## 20. Record Integrity
+
+Planned record-integrity states include:
+
+```text
+UNREVIEWED
+VERIFIED
+QUALIFIED
+DISPUTED
+DEFECTIVE
+```
+
+Machine analysis may propose integrity concerns.
+
+Final institutional verification status remains subject to authorized human review where required.
+
+---
+
+## 21. Authority Architecture
+
+Authority records are intended to distinguish structured attributes such as:
+
+- citation
+- authority type
+- jurisdiction
+- issuing body
+- title
+- effective date
+- status
+- delegation
+- duty
+- procedure
+- review rights
+- remedy
+- supporting evidence
+- verification status
+
+An extracted citation is not automatically verified authority.
+
+---
+
+## 22. Deadline Architecture
+
+A date is not automatically an institutional deadline.
+
+Controlled deadlines should ultimately record:
+
+- deadline type
+- matter
+- due date
+- triggering event
+- authority basis
+- calculation method
+- supporting evidence
+- status
+- satisfaction date
+- satisfying evidence
+
+Machine extraction may identify candidate dates.
+
+Institutional deadline status requires support from the record.
+
+---
+
+## 23. Determination Architecture
+
+A Determination is an institutional record.
+
+It is not equivalent to:
+
+- a machine summary
+- a classification
+- a retrieval result
+- an LDIE finding
+- a draft analytical conclusion
+
+Determinations may ultimately record:
+
+- issuing actor
+- issuing capacity
+- issue date
+- effective date
+- authority basis
+- evidence relied upon
+- findings
+- disposition
+- review availability
+- review deadline
+- provenance
+
+---
+
+## 24. Review Architecture
+
+Planned review states are:
+
+```text
+NOT_AVAILABLE
+AVAILABLE
+PENDING
+FILED
+DECIDED
+EXHAUSTED
+```
+
+Review exhaustion must not be inferred merely because time has elapsed or no additional record was located.
+
+---
+
+## 25. Remedy Architecture
+
+Remedy records may ultimately include:
+
+- remedy type
+- authority basis
+- prerequisites
+- status
+- preservation date
+- invocation date
+- exhaustion date
+- resulting determination
+- supporting evidence
+- provenance
+
+Machine processing must not independently declare remedies exhausted.
+
+---
+
+## 26. Legacy Document Intelligence Engine™
+
+The Legacy Document Intelligence Engine™ is a governed analytical subsystem.
+
+LDIE may assist with:
+
+- document intake
+- text extraction
+- metadata extraction
+- document classification
+- candidate-party identification
+- candidate-capacity identification
+- candidate-authority identification
+- candidate-date identification
+- candidate-deadline identification
+- retrieval
+- evidence relationship analysis
+- integrity review
+- analytical findings
+
+LDIE may not independently:
+
+```text
+authenticate evidence
+admit evidence
+verify authority
+establish capacity
+close matters
+issue institutional determinations
+declare reviews exhausted
+declare remedies exhausted
+delete evidentiary history
+delete audit history
+override human disposition
+bypass authorization
+```
+
+---
+
+## 27. Machine Finding Architecture
+
+Planned machine-finding states include:
+
+```text
+PROPOSED
+UNDER_REVIEW
+ADOPTED
+REJECTED
+SUPERSEDED
+```
+
+Machine output begins as a proposal.
+
+Institutional adoption requires an authorized human action.
+
+Machine findings should preserve provenance sufficient to identify:
+
+- source run
+- source evidence
+- generation time
+- processor version
+- confidence
+- reviewer
+- review time
+- disposition
+
+---
+
+## 28. Provenance Architecture
+
+Governed records should preserve source provenance.
+
+Expected provenance fields may include:
+
+- source type
+- source identifier
+- created by
+- created at
+- creation method
+- source evidence identifiers
+- machine-run identifier
+
+Planned creation methods include:
+
+```text
+HUMAN
+IMPORT
+SYSTEM
+LDIE_PROPOSAL
+```
+
+`LDIE_PROPOSAL` does not indicate institutional adoption.
+
+---
+
+## 29. Audit Architecture
+
+Sensitive actions should produce protected audit records.
+
+Examples include:
+
+- authorization changes
+- session revocation
+- record creation
+- record modification
+- status transitions
+- review
+- adoption
+- rejection
+- supersession
+- record linking
+- archival actions
+
+Audit history must not be ordinary user-editable application content.
+
+---
+
+## 30. Deployment Architecture
+
+Current deployment target:
+
+```text
+GitHub
+    ↓
+Firebase App Hosting
+    ↓
+Cloud Run managed runtime
+    ↓
+Firebase / Google Cloud services
+```
+
+Repository deployment configuration includes:
+
+```text
+apphosting.yaml
+.firebaserc
+firebase.json
+```
+
+Application Default Credentials or runtime service identity should be preferred for trusted Firebase Admin execution.
+
+Server secrets must not be exposed through browser-visible environment variables.
+
+---
+
+## 31. Environment Separation
+
+The architecture should evolve toward explicit:
+
+```text
+development
+staging
+production
+```
+
+environment separation.
+
+Production credentials and institutional data must not be used casually in local development.
+
+Infrastructure-specific environment configuration must remain outside application source code where possible.
+
+---
+
+## 32. CI Architecture
+
+GitHub Actions provides automated repository validation.
+
+The required controlled validation target is:
+
+```text
+pnpm test
+pnpm lint
+pnpm build
+```
+
+A controlled change is not conforming when required validation fails.
+
+CI must not silently ignore failed tests.
+
+---
+
+## 33. Security Architecture
+
+The governing security principles are:
+
+```text
+DENY BY DEFAULT
+
+SERVER AUTHORIZATION CONTROLS ACCESS
+
+CLIENT UI DOES NOT ESTABLISH AUTHORITY
+
+UNKNOWN STATUS FAILS CLOSED
+
+INVALID STATUS FAILS CLOSED
+
+PRIVILEGED CHANGES REQUIRE TRUSTED SERVER EXECUTION
+
+AUDIT HISTORY IS NOT ORDINARY USER CONTENT
+
+MACHINE OUTPUT DOES NOT EQUAL INSTITUTIONAL DETERMINATION
+```
+
+---
+
+## 34. Scalability Architecture
+
+The platform should scale through shared institutional services rather than duplicate product-specific infrastructure.
+
+Target shared capabilities include:
+
+- identity
+- authorization
+- organization management
+- workspace management
+- entitlements
+- audit
+- search
+- notifications
+- document storage
+- usage metering
+- analytics
+- external integrations
+
+The governing scalability principle is:
+
+> **SCALE THROUGH STANDARDIZATION. CUSTOMIZE AT THE EDGE. GOVERN THE CORE.**
+
+---
+
+## 35. Configuration Over Forking
+
+Customer-specific or institutional variation should be represented through configuration where practicable.
+
+Examples include:
+
+- branding
+- permissions
+- enabled features
+- retention rules
+- workflow templates
+- matter types
+- notification rules
+
+Separate customer codebases should not be the default scaling strategy.
+
+---
+
+## 36. Background Processing
+
+Long-running document-intelligence tasks should not depend upon a browser request remaining open.
+
+Future asynchronous processing should support states such as:
+
+```text
+QUEUED
+RUNNING
+SUCCEEDED
+FAILED
+CANCELLED
+```
+
+Candidate asynchronous workloads include:
+
+- document ingestion
+- extraction
+- indexing
+- classification
+- large retrieval operations
+- LDIE analysis
+- notifications
+- external synchronization
+
+---
+
+## 37. Storage Separation
+
+The architecture should preserve distinctions among:
+
+```text
+structured record metadata
+document binaries
+search indexes
+machine outputs
+audit history
+```
+
+Firestore should not be treated as a binary document store.
+
+Future document binaries should use appropriate object storage.
+
+Search and retrieval infrastructure may evolve independently from the canonical institutional record.
+
+---
+
+## 38. Observability
+
+Future production operations should measure:
+
+- authentication failures
+- authorization failures
+- request latency
+- application errors
+- background-job failures
+- Firestore usage
+- document-processing volume
+- LDIE runs
+- search performance
+- review latency
+- deployment failures
+
+Observability data does not itself redefine authoritative institutional records.
+
+---
+
+## 39. Historical Architecture
+
+Earlier repository documentation described:
+
+- Supabase PostgreSQL
+- Supabase Auth
+- Row Level Security
+- Vercel
+- React Query
+- Supabase migrations
+- Supabase Storage
+- Vercel Analytics
+- JWT/RLS-centered authorization
+
+Those components are historical architecture and are not authoritative for the current implementation.
+
+Historical design information may be preserved for provenance, but must be clearly labeled and must not be presented as active setup or deployment instruction.
+
+---
+
+## 40. Architecture Change Control
+
+Material changes to any of the following require controlled review:
+
+- authentication architecture
+- authorization architecture
+- institutional domain definitions
+- Firestore collection semantics
+- evidence states
+- authority states
+- determination semantics
+- review semantics
+- remedy semantics
+- LDIE governance boundaries
+- audit architecture
+- tenancy model
+- deployment architecture
+
+Implementation convenience alone is not sufficient authority to redefine the institutional model.
+
+---
+
+## 41. Current Phase 4 Sequence
+
+The controlled Phase 4 sequence is:
+
+```text
+P4-W01 — Architecture Baseline and Documentation Reconciliation
+
+P4-W02 — Institutional Domain Model
+
+P4-W03 — Multi-Tenant / Workspace Foundation
+
+P4-W04 — Matter Registry Persistence
+
+P4-W05 — Evidence and Authority Registry
+
+P4-W06 — Matter Control Interface
+
+P4-W07 — LDIE Integration
+
+P4-W08 — Executive Review and Scholar Integration
+
+P4-W09 — Security, Observability, and Scalability Closure
+
+P4-W10 — Production Verification
+```
+
+Each work unit must distinguish planned implementation from completed implementation.
+
+---
+
+## 42. Governing Documentation
+
+The principal technical documentation includes:
+
+```text
+README.md
+ARCHITECTURE.md
+DATABASE.md
+SETUP.md
+AGENTS.md
+CLAUDE.md
+docs/governance/
+```
+
+These documents must remain mutually consistent.
+
+Where conflict exists, it must be treated as an architecture defect and corrected through controlled review.
+
+---
+
+## 43. Governing Principle
+
+> **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
+
+This principle controls the development of the Kelly Legacy Institute Institutional Platform and the Legacy Document Intelligence Engine™.

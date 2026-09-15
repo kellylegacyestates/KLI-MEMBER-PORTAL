@@ -1,488 +1,835 @@
-# KLI Member Portal - Development Setup Guide
+# Kelly Legacy Institute Institutional Platform
 
-> **Current auth stack:** The live application now uses Firebase Authentication, Firestore, and Firebase Admin session cookies. Older Supabase references below are legacy notes and should not be used for current auth setup.
+## Development and Deployment Setup Guide
 
-## Prerequisites
+**Document Class:** Development Setup
+**System:** Kelly Legacy Institute Institutional Platform
+**Current Stack:** Next.js + Firebase + Firestore
+**Deployment Target:** Firebase App Hosting
+**Runtime:** Node.js 22
+**Package Manager:** pnpm 10
+**Status:** Active Setup Guide
 
-- **Node.js**: v20.x or higher
-- **pnpm**: v9.x or higher (`npm install -g pnpm`)
-- **Git**: Latest version
-- **Supabase Account**: Free tier or higher
-- **Stripe Account**: For payment testing
-- **PostgreSQL Client** (optional): For direct database access
+---
 
-## Initial Setup
+## 1. Purpose
 
-### 1. Clone Repository
+This guide defines the current development, validation, and deployment setup for the Kelly Legacy Institute Institutional Platform.
+
+The current implementation uses:
+
+```text
+Next.js
+React
+TypeScript
+Firebase Authentication
+Firebase Admin SDK
+Cloud Firestore
+Firebase Security Rules
+Firebase App Hosting
+```
+
+Historical setup instructions involving Supabase, PostgreSQL, Supabase migrations, or Vercel are obsolete and must not be used for the current platform.
+
+---
+
+## 2. Governing Principle
+
+> **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
+
+Setup instructions must match the actual repository.
+
+Commands that do not exist in `package.json` must not be documented as current commands.
+
+Historical infrastructure must not be represented as active infrastructure.
+
+---
+
+## 3. Current Repository
+
+Repository:
+
+```text
+https://github.com/kellylegacyestates/KLI-MEMBER-PORTAL
+```
+
+Clone:
 
 ```bash
-git clone https://github.com/DelonteKelly/KLI-MEMBER-PORTAL.git
+git clone https://github.com/kellylegacyestates/KLI-MEMBER-PORTAL.git
 cd KLI-MEMBER-PORTAL
 ```
 
-### 2. Install Dependencies
+---
 
-```bash
-pnpm install
+## 4. Required Runtime
+
+The repository currently requires:
+
+```text
+Node.js 22.x
+pnpm 10.28.1
 ```
 
-### 3. Environment Configuration
+Confirm:
 
-Create `.env.local` in the project root:
+```bash
+node --version
+pnpm --version
+```
+
+Expected Node major version:
+
+```text
+22
+```
+
+Expected pnpm version:
+
+```text
+10.28.1
+```
+
+Where Corepack is available:
+
+```bash
+corepack enable
+corepack prepare pnpm@10.28.1 --activate
+```
+
+---
+
+## 5. Install Dependencies
+
+Install from the committed lockfile:
+
+```bash
+pnpm install --frozen-lockfile
+```
+
+Do not casually regenerate the lockfile during documentation or unrelated controlled work.
+
+---
+
+## 6. Environment Configuration
+
+Copy the environment template:
+
+```bash
+cp .env.example .env.local
+```
+
+The Firebase Web SDK values are browser-visible by design and use the `NEXT_PUBLIC_` prefix.
+
+Typical client values include:
 
 ```env
-# Firebase Web SDK (browser-visible)
 NEXT_PUBLIC_FIREBASE_API_KEY=
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
 NEXT_PUBLIC_FIREBASE_APP_ID=
+```
 
-# Firebase Admin SDK (server-only)
-# Option A: Firebase App Hosting / Google Cloud Application Default Credentials
-#   - Configure the workload identity/service account in the hosting environment
-#   - Set FIREBASE_ADMIN_PROJECT_ID (or ensure the platform project ID is present)
+Trusted server configuration must not be exposed through `NEXT_PUBLIC_*`.
+
+---
+
+## 7. Firebase Admin Configuration
+
+Trusted server operations use the Firebase Admin SDK.
+
+Preferred production model:
+
+```text
+Firebase App Hosting runtime identity
++
+Application Default Credentials
+```
+
+Where the runtime already provides the Google Cloud project identity, explicit service-account credentials may not be required.
+
+Optional server-only configuration may include:
+
+```env
 FIREBASE_ADMIN_PROJECT_ID=
+```
 
-# Option B: Explicit service-account secrets for non-ADC environments
+For environments where explicit credentials are proven necessary:
+
+```env
 FIREBASE_ADMIN_CLIENT_EMAIL=
 FIREBASE_ADMIN_PRIVATE_KEY=
 ```
 
-For production/staging, create `.env.production.local` or `.env.staging.local`.
+These values must remain server-only.
 
-#### 3a. Firebase Admin session-cookie configuration
+Never commit:
 
-- The server now issues a trusted HTTP-only session cookie named `__session`.
-- Never place Admin credentials in `NEXT_PUBLIC_*` variables.
-- Never commit service-account JSON files or private keys to Git.
-- For local development, either:
-  - authenticate Application Default Credentials with Google Cloud tooling, or
-  - provide `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, and `FIREBASE_ADMIN_PRIVATE_KEY` in `.env.local`.
-- For `FIREBASE_ADMIN_PRIVATE_KEY`, keep embedded newlines escaped as `\n` in the environment variable.
-- In Firebase App Hosting, prefer runtime identity / Application Default Credentials when available. If explicit secrets are required, store them in Secret Manager and expose them only at runtime.
+- service-account JSON files
+- private keys
+- secrets
+- production credentials
 
-### 4. Supabase Project Setup
+---
 
-#### 4a. Create Supabase Project
+## 8. Local Development Authentication
 
-1. Go to [supabase.com](https://supabase.com) and sign in
-2. Create new project in your organization
-3. Copy the project URL and anon key to `.env.local`
+For local trusted Firebase Admin execution, use one of the following approved approaches.
 
-#### 4b. Get Service Role Key
+### Option A — Application Default Credentials
 
-1. In Supabase dashboard, go to **Settings → API**
-2. Copy the `service_role` key (keep this secret!)
-3. Add to `.env.local` as `SUPABASE_SERVICE_ROLE_KEY`
+Authenticate with Google Cloud tooling in a trusted development environment.
 
-#### 4c. Configure Authentication
+### Option B — Server-Only Environment Variables
 
-1. In Supabase dashboard, go to **Authentication → Providers**
-2. Enable Email/Password provider:
-   - Disable email confirmation (for dev)
-   - Allow unverified logins
-3. In **Auth → URL Configuration**:
-   - Add Site URL: `http://localhost:3000`
-   - Add Redirect URLs:
-     - `http://localhost:3000/auth/callback`
-     - `http://localhost:3000/api/auth/callback/supabase`
+Provide authorized server-only Firebase Admin values through `.env.local`.
 
-#### 4d. Run Database Migrations
+Do not expose Firebase Admin credentials to browser code.
 
-```bash
-# Install Supabase CLI
-npm install -g supabase
+---
 
-# Link to your project (use access token from Supabase dashboard)
-supabase link --project-ref [your-project-ref]
+## 9. Start Development Server
 
-# Apply migrations
-supabase db push
-
-# Or manually: Connect to Supabase and run SQL files in migrations/
-```
-
-### 5. Stripe Setup
-
-#### 5a. Get Test Keys
-
-1. Go to [stripe.com/dashboard](https://stripe.com/dashboard)
-2. Enable test mode (toggle in top right)
-3. Go to **Developers → API Keys**
-4. Copy test keys to `.env.local`:
-   - Publishable Key: `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`
-   - Secret Key: `STRIPE_SECRET_KEY`
-
-#### 5b. Create Webhook Endpoint
-
-```bash
-# Install Stripe CLI
-# macOS: brew install stripe/stripe-cli/stripe
-# Linux: curl https://files.stripe.com/stripe-cli/install.sh -O && bash install.sh
-# Windows: choco install stripe
-
-# Authenticate Stripe CLI
-stripe login
-
-# Create webhook to forward events to local server
-stripe listen --forward-to localhost:3000/api/payments/webhook
-
-# Copy the webhook signing secret to .env.local
-# STRIPE_WEBHOOK_SECRET=whsec_...
-```
-
-Keep this terminal open during development.
-
-#### 5c. Test Webhook
-
-```bash
-stripe trigger payment_intent.succeeded
-```
-
-### 6. Start Development Server
+Run:
 
 ```bash
 pnpm dev
 ```
 
-Visit `http://localhost:3000`
+Default local URL:
 
----
-
-## Database Migrations
-
-### Creating New Migrations
-
-```bash
-# Create a new migration
-supabase migration new [migration_name]
-
-# This creates: migrations/[timestamp]_[migration_name].sql
-
-# Edit the SQL file, then apply:
-supabase db push
-```
-
-### Example Migration Structure
-
-```sql
--- migrations/20240722_create_members_table.sql
-
--- Create table
-CREATE TABLE IF NOT EXISTS members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  auth_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
-  email TEXT NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
-
--- Create indexes
-CREATE INDEX idx_members_auth_id ON members(auth_id);
-
--- Enable RLS
-ALTER TABLE members ENABLE ROW LEVEL SECURITY;
-
--- Create RLS policies
-CREATE POLICY "Members can view own profile" ON members
-  FOR SELECT USING (auth.uid() = auth_id);
-```
-
-### Viewing Migration History
-
-```bash
-# List applied migrations
-supabase migration list
-
-# View migration status
-supabase db pull
-```
-
-### Reverting Migrations
-
-```bash
-# Reset database to previous state
-supabase db reset
-
-# This runs all migrations fresh from the latest state
+```text
+http://localhost:3000
 ```
 
 ---
 
-## Local Development Database
+## 10. Current Package Commands
 
-### Option 1: Use Supabase Staging Project (Recommended)
-
-Use a separate "staging" Supabase project for development. This keeps production data safe.
+The repository currently defines:
 
 ```bash
-# In .env.development.local
-NEXT_PUBLIC_SUPABASE_URL=https://[staging-project].supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[staging-anon-key]
+pnpm dev
+pnpm build
+pnpm start
+pnpm lint
+pnpm test
+pnpm provision:admins
+pnpm seed:publications
 ```
 
-### Option 2: Use Supabase Local Stack
+Do not use or document unsupported commands such as:
 
-```bash
-# Install Docker (prerequisite)
-
-# Start local Supabase stack
-supabase start
-
-# Connect to local Postgres
-supabase start
-# Then: postgresql://postgres:postgres@localhost:54322/postgres
-
-# Stop when done
-supabase stop
-```
-
----
-
-## Testing & Validation
-
-### Run Type Checking
-
-```bash
+```text
 pnpm type-check
+pnpm test:coverage
+pnpm test:e2e
 ```
 
-### Run Linting
+unless those scripts are formally added to `package.json`.
+
+---
+
+## 11. Baseline Validation
+
+Before beginning a controlled work unit:
+
+```bash
+pnpm test
+pnpm lint
+pnpm build
+```
+
+Record:
+
+- branch
+- starting commit
+- runtime versions
+- test result
+- lint result
+- build result
+- working-tree state
+
+A dirty baseline must be explained before implementation proceeds.
+
+---
+
+## 12. Controlled Work Branch
+
+Do not perform substantial controlled work directly on `main`.
+
+Example:
+
+```bash
+git checkout main
+git pull --ff-only origin main
+git checkout -b docs/p4-w01b-architecture-reconciliation
+```
+
+Use descriptive branch names tied to the controlled work unit.
+
+---
+
+## 13. Git Status Discipline
+
+Before implementation:
+
+```bash
+git status --short
+```
+
+Untracked or modified files must be classified before continuing.
+
+Do not silently:
+
+- delete unknown files
+- commit generated artifacts
+- mix unrelated local artifacts into a controlled change
+
+---
+
+## 14. Build
+
+Production build:
+
+```bash
+pnpm build
+```
+
+The build must complete without fatal errors before the work unit may be considered conforming.
+
+---
+
+## 15. Lint
+
+Run:
 
 ```bash
 pnpm lint
 ```
 
-### Run Tests
+Lint failures must be corrected or explicitly recorded as pre-existing defects.
+
+---
+
+## 16. Tests
+
+Run:
 
 ```bash
-# Unit tests
 pnpm test
-
-# Watch mode
-pnpm test:watch
-
-# Coverage
-pnpm test:coverage
 ```
 
-### Database Tests
+The current repository uses Vitest.
+
+A controlled work unit must not claim test success when tests were skipped or failed.
+
+---
+
+## 17. CI
+
+GitHub Actions should validate:
 
 ```bash
-# Test RLS policies
-psql postgresql://postgres:[password]@localhost:54322/postgres
+pnpm test
+pnpm lint
+pnpm build
+```
 
--- Test query as authenticated user:
-SET LOCAL ROLE authenticated;
-SET LOCAL request.jwt.claims = '{"sub": "user-uuid"}';
-SELECT * FROM members;
+CI is expected to run on:
+
+```text
+pull requests to main
+pushes to main
+```
+
+A pull request should not be considered conforming if required CI fails.
+
+---
+
+## 18. Firebase Project
+
+The current Google Cloud / Firebase project is:
+
+```text
+legacy-ai-production
+```
+
+Before performing Firebase or Google Cloud operations, confirm the active project:
+
+```bash
+gcloud config get-value project
+```
+
+Where necessary:
+
+```bash
+gcloud config set project legacy-ai-production
+```
+
+Do not assume the active Cloud Shell project is correct without verification.
+
+---
+
+## 19. Firebase App Hosting
+
+The current deployment target is Firebase App Hosting.
+
+Repository configuration includes:
+
+```text
+apphosting.yaml
+.firebaserc
+firebase.json
+```
+
+The application is not currently documented as a Vercel deployment.
+
+Vercel-specific deployment instructions are historical and should not be used unless formally reintroduced.
+
+---
+
+## 20. App Hosting Environment
+
+`apphosting.yaml` contains build/runtime configuration for Firebase App Hosting.
+
+Browser-visible Firebase Web SDK values may be available at both build and runtime.
+
+Trusted server secrets should use runtime identity or managed secret infrastructure rather than browser-visible variables.
+
+Do not place sensitive credentials directly in source control.
+
+---
+
+## 21. Firestore
+
+Cloud Firestore is the current authoritative datastore.
+
+Current implemented principal collections include:
+
+```text
+users
+auditEvents
+publications
+```
+
+New collections must not be assumed to exist merely because they are described in architecture documents.
+
+Planned collections such as:
+
+```text
+organizations
+workspaces
+matters
+evidence
+authorities
+deadlines
+determinations
+reviews
+remedies
+machineFindings
+```
+
+remain planned until separately implemented and verified.
+
+---
+
+## 22. Firestore Security Rules
+
+Security rules are maintained in:
+
+```text
+firestore.rules
+```
+
+The current model is deny-by-default.
+
+New browser-accessible collections require explicit rules.
+
+Do not weaken the catch-all denial merely to make development easier.
+
+---
+
+## 23. Administrative Provisioning
+
+The repository provides an administrative provisioning script.
+
+Preview first:
+
+```bash
+pnpm provision:admins -- --dry-run
+```
+
+If the script's argument handling requires direct invocation, use the repository-supported documented form verified against the implementation.
+
+Apply only from a trusted environment after dry-run review.
+
+Administrative provisioning must not:
+
+- create unauthorized identities
+- expose credentials
+- bypass email verification requirements
+- silently change access without audit records
+
+---
+
+## 24. Publication Seeding
+
+The repository provides:
+
+```bash
+pnpm seed:publications
+```
+
+Run only from an authorized trusted environment.
+
+Canonical publication records must not be overwritten casually.
+
+---
+
+## 25. Development Data Safety
+
+Development activity must avoid unnecessary interaction with production institutional data.
+
+Prefer:
+
+```text
+development environment
+staging environment
+test fixtures
+isolated records
+```
+
+The platform should continue evolving toward explicit environment separation:
+
+```text
+development
+staging
+production
 ```
 
 ---
 
-## Deployment
+## 26. Secrets
 
-### Deploy to Vercel
+Secrets must not be:
 
-#### 1. Connect Repository
+- committed to Git
+- pasted into source files
+- exposed in client bundles
+- stored in `NEXT_PUBLIC_*` values
+- logged in CI output
 
-1. Go to [vercel.com](https://vercel.com)
-2. Create new project
-3. Import from GitHub: `DelonteKelly/KLI-MEMBER-PORTAL`
-4. Select Next.js framework
-
-#### 2. Configure Environment Variables
-
-In Vercel project settings → Environment Variables:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=[production-url]
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[production-anon-key]
-SUPABASE_SERVICE_ROLE_KEY=[production-service-role]
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=[production-key]
-STRIPE_SECRET_KEY=[production-secret]
-STRIPE_WEBHOOK_SECRET=[production-webhook-secret]
-NEXT_PUBLIC_APP_URL=https://access.kellylegacyestates.com
-```
-
-#### 3. Deploy
-
-```bash
-# Deploy (automatic on push to main)
-git push origin main
-```
-
-Vercel will automatically:
-- Build the Next.js app
-- Run tests
-- Deploy to production
-- Configure SSL/HTTPS
-
-#### 4. Configure Supabase for Production
-
-In Supabase project settings:
-1. Add production domain to Auth URL configuration
-2. Update CORS settings if needed
-3. Enable database backups
-
-#### 5. Configure Stripe Webhooks for Production
-
-In Stripe dashboard → Developers → Webhooks:
-1. Add endpoint: `https://access.kellylegacyestates.com/api/payments/webhook`
-2. Select events:
-   - `payment_intent.succeeded`
-   - `customer.subscription.created`
-   - `customer.subscription.updated`
-   - `customer.subscription.deleted`
-3. Copy webhook secret to Vercel environment
+Use trusted secret-management mechanisms for production.
 
 ---
 
-## Troubleshooting
+## 27. Cloud Shell
 
-### Supabase Connection Issues
+Google Cloud Shell may be used for controlled development and administrative work.
+
+Before beginning:
 
 ```bash
-# Test connection
-psql $DATABASE_URL
-
-# If using Supabase CLI:
-supabase db list
-supabase db pull --dry-run
+gcloud config get-value project
+git status --short
+git branch --show-current
+git rev-parse HEAD
+node --version
+pnpm --version
 ```
 
-### Authentication Not Working
+Cloud Shell local artifacts must not automatically be committed to the repository.
 
-1. Check `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are correct
-2. Verify Auth URL configuration in Supabase dashboard includes your domain
-3. Check browser cookies are enabled
-4. Clear browser cache: DevTools → Application → Storage → Clear site data
+---
 
-### Stripe Webhook Not Receiving Events
+## 28. Generated Local Artifacts
 
-1. Ensure `stripe listen` command is running
-2. Verify webhook secret in `.env.local` matches the `whsec_` value from `stripe listen`
-3. Check Stripe logs in dashboard → Developers → Webhooks → Event log
-4. Test with: `stripe trigger payment_intent.succeeded`
+Tools may generate files such as:
 
-### Database Migrations Failing
-
-```bash
-# Check migration status
-supabase migration list
-
-# Manually apply a specific migration
-supabase db push --dry-run  # See what would be applied
-
-# Reset to known good state
-supabase db reset
-
-# Then reapply migrations
-supabase db push
+```text
+.agents/
+build-details.json
+skills-lock.json
 ```
 
-### Port 3000 Already in Use
+These files must be classified before inclusion.
 
-```bash
-# Use different port
-pnpm dev --port 3001
+If they are local tool artifacts, preserve or remove them outside the repository as appropriate.
 
-# Or kill process using port 3000
-lsof -i :3000
-kill -9 [PID]
+Do not automatically commit generated artifacts without architectural review.
+
+---
+
+## 29. Agent-Assisted Development
+
+AI coding agents may assist with implementation.
+
+They must operate under controlled scope.
+
+Before changing code, agents should read:
+
+```text
+README.md
+ARCHITECTURE.md
+DATABASE.md
+SETUP.md
+AGENTS.md
+CLAUDE.md
+docs/governance/
+```
+
+Agents must not:
+
+- redefine architecture independently
+- weaken authorization
+- bypass tests
+- treat machine output as institutional determination
+- write directly to production
+- merge without review
+- introduce unrelated changes
+
+---
+
+## 30. Development Workflow
+
+Recommended controlled workflow:
+
+```text
+1. Sync main
+2. Create bounded work branch
+3. Record starting commit
+4. Run baseline validation
+5. Implement authorized scope
+6. Run tests
+7. Run lint
+8. Run build
+9. Review git diff
+10. Run git diff --check
+11. Commit
+12. Push branch
+13. Open pull request
+14. Review CI
+15. Human review
+16. Merge
 ```
 
 ---
 
-## Development Workflows
+## 31. Pre-Commit Review
 
-### Adding a New Feature
-
-1. Create feature branch: `git checkout -b feature/your-feature`
-2. Make changes
-3. Run type check: `pnpm type-check`
-4. Run linter: `pnpm lint`
-5. Run tests: `pnpm test`
-6. Commit: `git commit -m "feat: description"`
-7. Push: `git push origin feature/your-feature`
-8. Create Pull Request on GitHub
-
-### Syncing with Production Database Schema
+Before committing:
 
 ```bash
-# Pull latest schema changes from production
-supabase db pull
-
-# Apply to local
-supabase db reset
+git status --short
+git diff --stat
+git diff --check
+git diff
 ```
 
-### Exporting Database for Analysis
+Confirm:
+
+- only authorized files changed
+- no secrets appear
+- no generated artifacts were accidentally added
+- no unrelated source files changed
+- documentation reflects implementation accurately
+
+---
+
+## 32. Commit
+
+Example:
 
 ```bash
-# Export as SQL
-pg_dump $DATABASE_URL > backup.sql
-
-# Export as CSV (for specific table)
-psql $DATABASE_URL \
-  -c "COPY table_name TO STDOUT WITH CSV HEADER" > table.csv
+git add ARCHITECTURE.md DATABASE.md SETUP.md
+git commit -m "docs: reconcile platform architecture and setup"
 ```
+
+Do not use this example blindly if additional authorized files are part of the same controlled work unit.
 
 ---
 
-## Performance Optimization
+## 33. Push
 
-### Monitor Database Performance
-
-In Supabase dashboard → Database → Network & Usage:
-- View real-time connection count
-- Monitor query duration
-- Check cache hit ratio
-
-### Enable Query Analysis
+Push the controlled branch:
 
 ```bash
-# In Supabase SQL editor:
-EXPLAIN ANALYZE SELECT * FROM members WHERE email = 'user@example.com';
+git push -u origin <branch-name>
 ```
 
-### Connection Pool Settings
-
-In Supabase → Project Settings → Database:
-- Pool size: 15 (for development), 25+ for production
-- Connection timeout: 30 seconds
+Do not force-push unless there is a specific reviewed reason.
 
 ---
 
-## Security Checklist
+## 34. Pull Request
 
-- [ ] All environment secrets are in `.env.local` (never committed)
-- [ ] Supabase auth enabled with strong email verification
-- [ ] Row Level Security (RLS) policies enabled on all tables
-- [ ] Service role key is only used in server-side code
-- [ ] Anon key is only used in client-side code
-- [ ] Stripe webhook signature validation enabled
-- [ ] HTTPS enforced in production
-- [ ] Database backups enabled
-- [ ] Audit logging implemented
+The pull request should document:
 
----
+- objective
+- starting commit
+- files changed
+- implementation scope
+- validation results
+- known defects
+- scope deviations
+- conformity result
 
-## Additional Resources
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Supabase Documentation](https://supabase.com/docs)
-- [Stripe Documentation](https://stripe.com/docs)
-- [Tailwind CSS](https://tailwindcss.com/docs)
-- [TypeScript](https://www.typescriptlang.org/docs/)
+The pull request description becomes part of the implementation record.
 
 ---
 
-## Support
+## 35. Production Deployment
 
-For issues or questions:
-1. Check the troubleshooting section above
-2. Review documentation files
-3. Check GitHub Issues
-4. Create a new issue with detailed description
+Production deployment should occur only after:
+
+- required tests pass
+- lint passes
+- build passes
+- CI passes
+- security review is complete
+- required environment configuration is verified
+- controlled work is merged
+- production release is authorized
+
+Documentation changes alone do not require production deployment unless they are part of a separately approved release.
+
+---
+
+## 36. Historical Supabase Instructions
+
+Earlier repository documentation included:
+
+- Supabase Auth
+- PostgreSQL
+- SQL migrations
+- Row Level Security
+- service-role keys
+- Supabase local stack
+- Supabase staging projects
+
+Those instructions are historical.
+
+They are not current setup requirements.
+
+---
+
+## 37. Historical Vercel Instructions
+
+Earlier repository documentation included:
+
+- Vercel deployment
+- Vercel environment variables
+- Vercel Analytics
+- Vercel Edge Network
+
+Those instructions are historical.
+
+The current deployment target is Firebase App Hosting.
+
+---
+
+## 38. Historical Stripe Instructions
+
+Earlier repository documentation included active Stripe setup instructions.
+
+Stripe should only be documented as current infrastructure where implementation evidence confirms the integration is active and required.
+
+Do not configure Stripe solely because historical documentation referenced it.
+
+---
+
+## 39. Troubleshooting
+
+### Wrong Node Version
+
+If the repository reports an unsupported engine:
+
+```bash
+nvm install 22
+nvm use 22
+```
+
+Confirm:
+
+```bash
+node --version
+```
+
+### Dependency Problems
+
+Reinstall under the supported runtime:
+
+```bash
+rm -rf node_modules
+pnpm install --frozen-lockfile
+```
+
+### Dirty Working Tree
+
+Inspect:
+
+```bash
+git status --short
+```
+
+Classify unexpected files before editing or committing.
+
+### Firebase Admin Errors
+
+Confirm:
+
+- active project
+- runtime identity
+- required environment configuration
+- server-only credential handling
+
+Do not bypass authentication checks to resolve configuration errors.
+
+---
+
+## 40. Required Validation Before Merge
+
+Run:
+
+```bash
+pnpm test
+pnpm lint
+pnpm build
+git diff --check
+```
+
+Required result:
+
+```text
+TEST  PASS
+LINT  PASS
+BUILD PASS
+DIFF CHECK PASS
+```
+
+---
+
+## 41. Governing Documentation
+
+Current principal technical documentation:
+
+```text
+README.md
+ARCHITECTURE.md
+DATABASE.md
+SETUP.md
+AGENTS.md
+CLAUDE.md
+docs/governance/
+```
+
+These documents must remain mutually consistent.
+
+---
+
+## 42. Governing Principle
+
+> **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
