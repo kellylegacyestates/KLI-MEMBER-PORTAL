@@ -7,3 +7,8 @@ export * from "./membershipRepository";
 export * from "./matterRepository";
 export * from "./evidenceRepository";
 export * from "./authorityRepository";
+export * from "./communicationRepository";
+export * from "./deadlineRepository";
+export * from "./determinationRepository";
+export * from "./reviewRepository";
+export * from "./remedyRepository";
