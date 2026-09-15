@@ -43,6 +43,52 @@ export function authorityDocumentPath(
   return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/authorities/${authorityId}`;
 }
 
+
+export function communicationDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  communicationId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/communications/${communicationId}`;
+}
+
+export function deadlineDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  deadlineId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/deadlines/${deadlineId}`;
+}
+
+export function determinationDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  determinationId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/determinations/${determinationId}`;
+}
+
+export function reviewDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  reviewId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/reviews/${reviewId}`;
+}
+
+export function remedyDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  remedyId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/remedies/${remedyId}`;
+}
+
 export function membershipDocumentPath(
   organizationId: OrganizationId,
   membershipId: string,

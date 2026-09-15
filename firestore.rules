@@ -101,6 +101,26 @@ service cloud.firestore {
           match /authorities/{authorityId} {
             allow read, write: if false;
           }
+
+          match /communications/{communicationId} {
+            allow read, write: if false;
+          }
+
+          match /deadlines/{deadlineId} {
+            allow read, write: if false;
+          }
+
+          match /determinations/{determinationId} {
+            allow read, write: if false;
+          }
+
+          match /reviews/{reviewId} {
+            allow read, write: if false;
+          }
+
+          match /remedies/{remedyId} {
+            allow read, write: if false;
+          }
         }
       }
 

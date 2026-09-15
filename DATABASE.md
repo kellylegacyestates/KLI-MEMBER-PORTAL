@@ -1385,3 +1385,76 @@ Evidence management UI
 Authority management UI
 LDIE persistence integration
 ```
+
+---
+
+## P4-W06 — Institutional Record Chain Persistence
+
+### Implemented Matter-Scoped Persistence
+
+Trusted server-side persistence now includes:
+
+```text
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/communications/{communicationId}
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/deadlines/{deadlineId}
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/determinations/{determinationId}
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/reviews/{reviewId}
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/remedies/{remedyId}
+```
+
+### Scope Integrity
+
+Every record must match its full Organization → Workspace → Matter path.
+
+The following identifiers are immutable after creation:
+
+- organization ID
+- workspace ID
+- Matter ID
+- record ID
+
+### Record Distinctions
+
+The institutional record model preserves separate procedural states:
+
+```text
+Communication sent/received ≠ Evidence authenticated
+Deadline satisfied ≠ Matter closed
+Determination issued ≠ Review exhausted
+Review decided ≠ Remedy exhausted
+Remedy available ≠ Remedy invoked
+Remedy resolved ≠ Remedy exhausted
+```
+
+### Repository Boundary
+
+Trusted server repositories support create / get / update for:
+
+- Communication
+- Deadline
+- Determination
+- Review
+- Remedy
+
+Creation refuses to overwrite existing records.
+
+Reads validate stored scope against the requested Matter path.
+
+Updates reject Organization, Workspace, Matter, or record-ID migration.
+
+### Access Boundary
+
+Browser reads and writes remain explicitly denied for all five record collections.
+
+Persistence is available only through trusted Firebase Admin server code.
+
+### Not Yet Implemented
+
+```text
+MachineFinding persistence
+AuditEvent persistence
+browser institutional-record access
+record-management UI
+LDIE runtime integration
+executive determination workflow
+```
