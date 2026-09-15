@@ -1223,3 +1223,74 @@ browser tenant access
 tenant administration UI
 LDIE persistence
 ```
+
+---
+
+## P4-W04 — Matter Registry Persistence
+
+### Implemented Matter Persistence
+
+Trusted server-side Matter persistence now uses:
+
+```text
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}
+```
+
+The hierarchy is:
+
+```text
+Organization
+    ↓
+Workspace
+    ↓
+Matter
+```
+
+### Scope Integrity
+
+A persisted Matter must satisfy all three path invariants:
+
+- Matter `organizationId` equals the path organization ID
+- Matter `workspaceId` equals the path workspace ID
+- Matter `id` equals the path matter ID
+
+These scope identifiers are immutable after creation.
+
+### Repository Boundary
+
+Server-side Matter persistence supports:
+
+```text
+create
+get
+update
+```
+
+Creation refuses to overwrite an existing Matter.
+
+Reads validate the stored record against the requested tenant path.
+
+Updates reject organization, workspace, or Matter-ID migration.
+
+### Access Boundary
+
+Browser reads and writes to Matter records remain explicitly denied by Firebase Security Rules.
+
+Matter persistence is available only through trusted Firebase Admin server code.
+
+### Not Yet Implemented
+
+P4-W04 does not implement:
+
+```text
+Evidence persistence
+Authority persistence
+Communication persistence
+Deadline persistence
+Determination persistence
+Review persistence
+Remedy persistence
+browser Matter access
+Matter management UI
+LDIE Matter integration
+```

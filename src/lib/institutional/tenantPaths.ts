@@ -16,6 +16,14 @@ export function workspaceDocumentPath(
   return `organizations/${organizationId}/workspaces/${workspaceId}`;
 }
 
+export function matterDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}`;
+}
+
 export function membershipDocumentPath(
   organizationId: OrganizationId,
   membershipId: string,
