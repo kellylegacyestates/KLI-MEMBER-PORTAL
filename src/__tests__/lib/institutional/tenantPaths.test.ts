@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  matterDocumentPath,
   membershipDocumentPath,
   organizationDocumentPath,
   workspaceDocumentPath,
@@ -18,6 +19,18 @@ describe("tenant persistence paths", () => {
       workspaceDocumentPath("org-001", "workspace-001"),
     ).toBe(
       "organizations/org-001/workspaces/workspace-001",
+    );
+  });
+
+  it("nests matters beneath their workspace", () => {
+    expect(
+      matterDocumentPath(
+        "org-001",
+        "workspace-001",
+        "matter-001",
+      ),
+    ).toBe(
+      "organizations/org-001/workspaces/workspace-001/matters/matter-001",
     );
   });
 

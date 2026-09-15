@@ -90,6 +90,10 @@ service cloud.firestore {
 
       match /workspaces/{workspaceId} {
         allow read, write: if false;
+
+        match /matters/{matterId} {
+          allow read, write: if false;
+        }
       }
 
       match /memberships/{membershipId} {
