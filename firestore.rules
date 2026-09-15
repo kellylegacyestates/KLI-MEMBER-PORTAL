@@ -93,6 +93,14 @@ service cloud.firestore {
 
         match /matters/{matterId} {
           allow read, write: if false;
+
+          match /evidence/{evidenceId} {
+            allow read, write: if false;
+          }
+
+          match /authorities/{authorityId} {
+            allow read, write: if false;
+          }
         }
       }
 

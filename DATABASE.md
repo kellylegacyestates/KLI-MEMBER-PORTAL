@@ -1294,3 +1294,94 @@ browser Matter access
 Matter management UI
 LDIE Matter integration
 ```
+
+---
+
+## P4-W05 — Evidence & Authority Registry Persistence
+
+### Implemented Evidence Persistence
+
+Trusted server-side Evidence persistence uses:
+
+```text
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/evidence/{evidenceId}
+```
+
+### Implemented Authority Persistence
+
+Trusted server-side Authority persistence uses:
+
+```text
+organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/authorities/{authorityId}
+```
+
+### Scope Integrity
+
+Evidence and Authority records must match their full tenant and Matter path.
+
+The following identifiers are immutable after creation:
+
+- organization ID
+- workspace ID
+- Matter ID
+- record ID
+
+### Evidence State Integrity
+
+Evidence lifecycle status is distinct from institutional record integrity.
+
+```text
+IDENTIFIED ≠ RECEIVED
+RECEIVED ≠ AUTHENTICATED
+AUTHENTICATED ≠ ADMITTED
+EvidenceStatus ≠ RecordIntegrityStatus
+```
+
+### Authority Verification Integrity
+
+Authority verification status is distinct from institutional record integrity.
+
+```text
+UNVERIFIED ≠ VERIFIED
+CANDIDATE ≠ VERIFIED
+QUALIFIED ≠ VERIFIED
+DISPUTED ≠ VERIFIED
+AuthorityVerificationStatus ≠ RecordIntegrityStatus
+```
+
+### Repository Boundary
+
+Trusted server repositories support:
+
+```text
+Evidence: create / get / update
+Authority: create / get / update
+```
+
+Creation refuses to overwrite existing records.
+
+Reads validate stored scope against the requested path.
+
+Updates reject tenant, Matter, or record-ID migration.
+
+### Access Boundary
+
+Browser reads and writes remain explicitly denied for Evidence and Authority records.
+
+Persistence is available only through trusted Firebase Admin server code.
+
+### Not Yet Implemented
+
+```text
+Communication persistence
+Deadline persistence
+Determination persistence
+Review persistence
+Remedy persistence
+MachineFinding persistence
+browser Evidence access
+browser Authority access
+Evidence management UI
+Authority management UI
+LDIE persistence integration
+```
