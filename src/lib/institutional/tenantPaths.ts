@@ -24,6 +24,25 @@ export function matterDocumentPath(
   return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}`;
 }
 
+
+export function evidenceDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  evidenceId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/evidence/${evidenceId}`;
+}
+
+export function authorityDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  authorityId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/authorities/${authorityId}`;
+}
+
 export function membershipDocumentPath(
   organizationId: OrganizationId,
   membershipId: string,

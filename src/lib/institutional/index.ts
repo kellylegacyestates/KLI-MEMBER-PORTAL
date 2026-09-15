@@ -5,3 +5,5 @@ export * from "./organizationRepository";
 export * from "./workspaceRepository";
 export * from "./membershipRepository";
 export * from "./matterRepository";
+export * from "./evidenceRepository";
+export * from "./authorityRepository";
