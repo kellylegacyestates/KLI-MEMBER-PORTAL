@@ -1,644 +1,1167 @@
-# KLI Member Portal - Database Schema & RLS Policies
+# Kelly Legacy Institute Institutional Platform
 
-## Overview
-The deployed application uses Firestore with Firebase Security Rules. Historical
-PostgreSQL/Supabase planning material remains below for context; the Firestore
-collections documented in this section are authoritative for implemented features.
+## Database Architecture and Record Model
 
-## Firestore Collections
-
-### `publications/{publicationId}`
-
-The `publications` collection is the canonical KLI Publications Registry. One
-document represents one institutional publication across all versions and
-distribution channels.
-
-- **Document ID policy:** use the stable canonical KLI publication ID (for
-  example, `KLI-RPS-2026-01`), never a random ID for the authoritative record.
-  The document's `id` field must equal its Firestore document ID.
-- **Identity and discovery:** `slug`, `title`, optional `subtitle`, `series`,
-  `publicationType`, `status`, `publicationDate`, `authors`, `institution`,
-  `abstract`, and `keywords`.
-- **Visibility:** `visibility` is exactly `public` or `private`. Browser reads
-  are allowed without authentication only when it is `public`; administrators
-  may read either state.
-- **Current version:** `currentVersion` points to a matching entry in
-  `versions`. The embedded version history records version status, public
-  eligibility, filename, optional verified file URL, timestamp, and notes.
-  Prior entries are preserved. The type boundary permits moving this history
-  to a subcollection in a later phase without changing route-facing records.
-- **Identifiers:** `identifiers` stores ORCID, SSRN Abstract ID, Zenodo DOI,
-  institutional DOI, and ISBN as identifiers. Identifiers do not imply a
-  verified external URL.
-- **Distribution:** `distribution` separately tracks SSRN, Zenodo, website,
-  and journal status plus optional names, identifiers, and verified URLs.
-- **Rights and citation:** `rights` stores copyright and license;
-  `citation.preferred` stores the authoritative citation.
-- **CTA:** `cta` stores a label and optional related-study URL.
-- **Timestamps:** `createdAt` and `updatedAt` are Firestore timestamps.
-- **Write restrictions:** only active users whose existing `users/{uid}`
-  profile has role `admin` may create, update, or delete through the client
-  rules. Application mutations additionally verify the trusted server session
-  with `requireAdmin()` and use the Firebase Admin data-access layer.
-
-The initial record can be created without overwriting an existing canonical
-record by running `corepack pnpm seed:publications` from an authorized
-workstation with Application Default Credentials and
-`FIREBASE_ADMIN_PROJECT_ID` configured.
-
-## Database Schema
-
-### Core Tables
-
-#### 1. `auth.users` (Managed by Supabase)
-```sql
-- id: uuid (PK)
-- email: text (unique)
-- created_at: timestamp
-- updated_at: timestamp
-- last_sign_in_at: timestamp
-```
-**Note**: Supabase Auth manages this table. We extend it with the `members` table.
+**Document Class:** Database Architecture
+**System:** Kelly Legacy Institute Institutional Platform
+**Authoritative Datastore:** Cloud Firestore
+**Security Model:** Firebase Security Rules + trusted server-side authorization
+**Current Program:** Phase 4 — Institutional Platform
+**Status:** Active Database Specification
 
 ---
 
-#### 2. `public.members`
-User member profiles and subscription status.
+## 1. Purpose
 
-```sql
-CREATE TABLE members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  auth_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
-  first_name TEXT NOT NULL,
-  last_name TEXT NOT NULL,
-  email TEXT NOT NULL,
-  avatar_url TEXT,
-  role TEXT NOT NULL DEFAULT 'member' 
-    CHECK (role IN ('member', 'admin', 'moderator')),
-  
-  -- Subscription status
-  subscription_status TEXT NOT NULL DEFAULT 'trial'
-    CHECK (subscription_status IN ('trial', 'active', 'canceled', 'past_due')),
-  subscription_tier TEXT NOT NULL DEFAULT 'standard'
-    CHECK (subscription_tier IN ('free', 'standard', 'premium')),
-  stripe_customer_id TEXT UNIQUE,
-  stripe_subscription_id TEXT UNIQUE,
-  subscription_start_date TIMESTAMP,
-  subscription_end_date TIMESTAMP,
-  
-  -- Profile
-  bio TEXT,
-  phone TEXT,
-  address_line1 TEXT,
-  address_line2 TEXT,
-  city TEXT,
-  state TEXT,
-  postal_code TEXT,
-  country TEXT,
-  
-  -- Tracking
-  last_login_at TIMESTAMP,
-  email_verified_at TIMESTAMP,
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  
-  CONSTRAINT valid_subscription_dates CHECK (
-    subscription_end_date IS NULL OR subscription_start_date <= subscription_end_date
-  )
-);
+This document defines the current authoritative database architecture for the Kelly Legacy Institute Institutional Platform.
 
-CREATE INDEX idx_members_auth_id ON members(auth_id);
-CREATE INDEX idx_members_stripe_customer_id ON members(stripe_customer_id);
-CREATE INDEX idx_members_role ON members(role);
-CREATE INDEX idx_members_subscription_status ON members(subscription_status);
+Cloud Firestore is the current system of record for implemented application data.
+
+Historical PostgreSQL and Supabase schemas previously stored in this repository are not part of the current production architecture unless expressly reintroduced through an approved architecture change.
+
+This document distinguishes:
+
+```text
+IMPLEMENTED COLLECTIONS
+≠
+PLANNED COLLECTIONS
 ```
+
+Planned institutional domain objects must not be represented as deployed collections until implementation, security review, validation, and controlled acceptance are complete.
 
 ---
 
-#### 3. `public.courses`
-Curriculum structure - the Fiduciary Foundations program.
+## 2. Governing Data Principle
 
-```sql
-CREATE TABLE courses (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  slug TEXT NOT NULL UNIQUE,
-  title TEXT NOT NULL,
-  description TEXT,
-  short_description TEXT,
-  module_number INTEGER NOT NULL UNIQUE,
-  
-  -- Content
-  overview_content TEXT,
-  learning_objectives TEXT[] DEFAULT ARRAY[]::TEXT[],
-  
-  -- Access control
-  required_tier TEXT NOT NULL DEFAULT 'standard'
-    CHECK (required_tier IN ('free', 'standard', 'premium')),
-  published BOOLEAN NOT NULL DEFAULT FALSE,
-  
-  -- Metadata
-  order_index INTEGER NOT NULL,
-  duration_minutes INTEGER,
-  difficulty_level TEXT DEFAULT 'intermediate'
-    CHECK (difficulty_level IN ('beginner', 'intermediate', 'advanced')),
-  
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+> **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
 
-CREATE INDEX idx_courses_published ON courses(published);
-CREATE INDEX idx_courses_order ON courses(order_index);
-CREATE INDEX idx_courses_required_tier ON courses(required_tier);
+Database structure must preserve institutional distinctions among:
+
+```text
+identity
+capacity
+authority
+evidence
+procedure
+determination
+review
+remedy
+machine finding
+audit history
 ```
+
+Persistence convenience must not collapse concepts that the institutional model treats separately.
 
 ---
 
-#### 4. `public.lessons`
-Individual lessons within courses.
+## 3. Current Authoritative Datastore
 
-```sql
-CREATE TABLE lessons (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  course_id UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
-  
-  slug TEXT NOT NULL,
-  title TEXT NOT NULL,
-  description TEXT,
-  
-  -- Content
-  content TEXT,
-  video_url TEXT,
-  video_duration_seconds INTEGER,
-  
-  -- Materials
-  downloadable_materials JSONB DEFAULT '{}'::JSONB,
-  -- Example: [{"name": "Lesson Guide", "url": "...", "type": "pdf"}, ...]
-  
-  -- Metadata
-  lesson_number INTEGER NOT NULL,
-  order_index INTEGER NOT NULL,
-  published BOOLEAN NOT NULL DEFAULT FALSE,
-  
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  
-  UNIQUE(course_id, slug)
-);
+The implemented application uses:
 
-CREATE INDEX idx_lessons_course_id ON lessons(course_id);
-CREATE INDEX idx_lessons_published ON lessons(published);
-CREATE INDEX idx_lessons_order ON lessons(course_id, order_index);
+```text
+Cloud Firestore
 ```
+
+Trusted server operations use:
+
+```text
+Firebase Admin SDK
+```
+
+Browser access is governed by:
+
+```text
+firestore.rules
+```
+
+The database currently follows a deny-by-default posture.
+
+Collections not explicitly permitted by Firebase Security Rules remain inaccessible to browser clients.
 
 ---
 
-#### 5. `public.member_progress`
-Track member progress through lessons and courses.
+## 4. Current Implemented Collections
 
-```sql
-CREATE TABLE member_progress (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
-  lesson_id UUID NOT NULL REFERENCES lessons(id) ON DELETE CASCADE,
-  
-  -- Progress tracking
-  started_at TIMESTAMP,
-  completed_at TIMESTAMP,
-  progress_percentage INTEGER NOT NULL DEFAULT 0
-    CHECK (progress_percentage >= 0 AND progress_percentage <= 100),
-  
-  -- Notes
-  notes TEXT,
-  
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  
-  UNIQUE(member_id, lesson_id)
-);
+The currently implemented principal Firestore collections are:
 
-CREATE INDEX idx_member_progress_member_id ON member_progress(member_id);
-CREATE INDEX idx_member_progress_lesson_id ON member_progress(lesson_id);
-CREATE INDEX idx_member_progress_completed ON member_progress(member_id) 
-  WHERE completed_at IS NOT NULL;
+```text
+users/{uid}
+auditEvents/{eventId}
+publications/{publicationId}
 ```
+
+These are the only collections documented here as current authoritative application collections.
+
+Other institutional collections described later in this document are planned architecture unless separately implemented and verified.
 
 ---
 
-#### 6. `public.publications`
-Research library and publications.
+# CURRENT COLLECTIONS
 
-```sql
-CREATE TABLE publications (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  title TEXT NOT NULL,
-  slug TEXT NOT NULL UNIQUE,
-  description TEXT,
-  content TEXT,
-  
-  -- Metadata
-  authors TEXT[] DEFAULT ARRAY[]::TEXT[],
-  publication_date DATE,
-  updated_date DATE,
-  
-  -- Categorization
-  category TEXT NOT NULL
-    CHECK (category IN (
-      'Fiduciary Studies', 'Trust Administration', 'Jurisdiction', 
-      'Administrative Procedure', 'Public Records', 'Governance', 
-      'Banking', 'AI Governance'
-    )),
-  
-  -- Access
-  published BOOLEAN NOT NULL DEFAULT FALSE,
-  required_tier TEXT NOT NULL DEFAULT 'standard',
-  
-  -- Content
-  file_url TEXT,
-  file_type TEXT CHECK (file_type IN ('pdf', 'doc', 'txt', 'epub')),
-  
-  -- Tracking
-  view_count INTEGER NOT NULL DEFAULT 0,
-  
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+## 5. `users/{uid}`
 
-CREATE INDEX idx_publications_category ON publications(category);
-CREATE INDEX idx_publications_published ON publications(published);
-CREATE INDEX idx_publications_required_tier ON publications(required_tier);
+The `users` collection stores institutional user-profile and access-governance information.
+
+Canonical path:
+
+```text
+users/{uid}
 ```
+
+The document ID corresponds to the Firebase Authentication UID.
+
+### Current Purpose
+
+The user profile supports:
+
+- institutional identity association
+- role
+- account status
+- membership status
+- profile information
+- authorization decisions
+
+### Protected Fields
+
+Protected fields include:
+
+```text
+uid
+email
+role
+accountStatus
+membershipStatus
+createdAt
+```
+
+These fields must not be modifiable by ordinary browser profile updates.
+
+### Member-Editable Fields
+
+Current Firebase Security Rules permit narrowly scoped member updates to approved profile fields.
+
+The authoritative list remains controlled by `firestore.rules`.
+
+### Current Initial Authorization State
+
+New client-created profiles must use safe initial values including:
+
+```text
+role = member
+accountStatus = active
+membershipStatus = pending
+```
+
+This prevents self-assignment of elevated privileges.
+
+### Current Principal Roles
+
+```text
+member
+executive
+admin
+```
+
+Role semantics are governed by server authorization logic and institutional documentation.
 
 ---
 
-#### 7. `public.publications_members`
-Many-to-many relationship for member reading lists.
+## 6. `auditEvents/{eventId}`
 
-```sql
-CREATE TABLE publications_members (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
-  publication_id UUID NOT NULL REFERENCES publications(id) ON DELETE CASCADE,
-  
-  -- Tracking
-  bookmarked_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  read_at TIMESTAMP,
-  notes TEXT,
-  
-  UNIQUE(member_id, publication_id)
-);
+The `auditEvents` collection stores trusted security and institutional audit events.
 
-CREATE INDEX idx_publications_members_member ON publications_members(member_id);
-CREATE INDEX idx_publications_members_publication ON publications_members(publication_id);
+Canonical path:
+
+```text
+auditEvents/{eventId}
 ```
+
+### Security Posture
+
+Browser access is denied.
+
+```text
+allow read, write: if false;
+```
+
+Audit events are intended to be created by trusted server-side processes.
+
+### Audit Purpose
+
+Audit records may preserve events including:
+
+- authorization changes
+- administrative session revocation
+- security-sensitive operations
+- protected status transitions
+- privileged administrative actions
+
+Audit records must not be treated as ordinary user-editable application content.
+
+### Append-Oriented Principle
+
+The intended audit posture is append-oriented.
+
+Existing audit history should not be silently rewritten or deleted as part of ordinary application behavior.
 
 ---
 
-#### 8. `public.announcements`
-Member announcements and notifications.
+## 7. `publications/{publicationId}`
 
-```sql
-CREATE TABLE announcements (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  
-  -- Publication
-  published_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  published_by UUID NOT NULL REFERENCES members(id) ON DELETE RESTRICT,
-  
-  -- Targeting
-  tier_required TEXT NOT NULL DEFAULT 'free'
-    CHECK (tier_required IN ('free', 'standard', 'premium')),
-  
-  -- Metadata
-  featured BOOLEAN DEFAULT FALSE,
-  view_count INTEGER NOT NULL DEFAULT 0,
-  
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+The `publications` collection is the canonical Kelly Legacy Institute Publications Registry.
 
-CREATE INDEX idx_announcements_published_at ON announcements(published_at);
-CREATE INDEX idx_announcements_featured ON announcements(featured);
+Canonical path:
+
+```text
+publications/{publicationId}
 ```
+
+One document represents one institutional publication across versions and distribution channels.
+
+### Document Identity
+
+The Firestore document ID should use the stable institutional publication identifier.
+
+Example:
+
+```text
+KLI-RPS-2026-01
+```
+
+The record's internal `id` field must equal the Firestore document ID.
+
+Random document IDs should not be used for canonical publication records.
+
+### Publication Identity and Discovery Fields
+
+A canonical publication may contain:
+
+- id
+- slug
+- title
+- subtitle
+- series
+- publicationType
+- status
+- publicationDate
+- authors
+- institution
+- abstract
+- keywords
+
+### Visibility
+
+Visibility is explicitly controlled.
+
+Current supported values are:
+
+```text
+public
+private
+```
+
+A publication is publicly readable only when public visibility is explicitly established.
+
+Administrators may access private publication records through authorized workflows.
+
+### Versioning
+
+A publication maintains one stable institutional identity.
+
+Version history remains associated with that identity.
+
+Expected version information may include:
+
+- version identifier
+- version status
+- public eligibility
+- filename
+- verified file URL
+- timestamp
+- notes
+
+A new version does not automatically create a new unrelated publication record.
+
+### Identifiers
+
+Publication identifiers may include:
+
+- ORCID
+- SSRN identifiers
+- Zenodo DOI
+- institutional DOI
+- ISBN
+
+An identifier does not by itself prove an external URL is verified.
+
+### Distribution
+
+Distribution metadata may track channels such as:
+
+- SSRN
+- Zenodo
+- institutional website
+- journal publication
+
+Distribution status and external identifiers should remain separate from publication identity.
+
+### Rights and Licensing
+
+Publication records may contain:
+
+- copyright information
+- license information
+- rights statements
+- preferred citation
+
+Publication-specific license terms control where expressly stated.
+
+### Administrative Writes
+
+Administrative writes are restricted to authorized active administrators.
+
+Application mutation logic must independently verify trusted administrative authorization.
 
 ---
 
-#### 9. `public.weekly_briefings`
-Weekly curated briefings for members.
+# SECURITY AND ACCESS CONTROL
 
-```sql
-CREATE TABLE weekly_briefings (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  title TEXT NOT NULL,
-  content TEXT NOT NULL,
-  summary TEXT,
-  
-  -- Publication
-  published_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  week_of DATE NOT NULL UNIQUE,
-  published_by UUID NOT NULL REFERENCES members(id) ON DELETE RESTRICT,
-  
-  -- Targeting
-  tier_required TEXT NOT NULL DEFAULT 'standard'
-    CHECK (tier_required IN ('free', 'standard', 'premium')),
-  
-  -- Content references
-  featured_publications UUID[],
-  featured_lessons UUID[],
-  
-  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+## 8. Firestore Security Rules
 
-CREATE INDEX idx_weekly_briefings_week_of ON weekly_briefings(week_of);
-CREATE INDEX idx_weekly_briefings_published_at ON weekly_briefings(published_at);
+The repository's authoritative browser-access rules are maintained in:
+
+```text
+firestore.rules
 ```
+
+Current implemented rules include explicit handling for:
+
+```text
+users
+auditEvents
+publications
+```
+
+All other collections are denied by the catch-all rule.
+
+This means new institutional collections are not browser-accessible merely because they are created.
+
+That is intentional.
 
 ---
 
-#### 10. `public.audit_logs`
-Security and compliance audit trail.
+## 9. Deny-by-Default Model
 
-```sql
-CREATE TABLE audit_logs (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  
-  -- User action
-  member_id UUID REFERENCES members(id) ON DELETE SET NULL,
-  action TEXT NOT NULL,
-  entity_type TEXT NOT NULL,
-  entity_id UUID,
-  
-  -- Details
-  changes JSONB,
-  ip_address INET,
-  user_agent TEXT,
-  
-  -- Timestamps
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+The current Firestore security architecture follows:
 
-CREATE INDEX idx_audit_logs_member_id ON audit_logs(member_id);
-CREATE INDEX idx_audit_logs_entity ON audit_logs(entity_type, entity_id);
-CREATE INDEX idx_audit_logs_created_at ON audit_logs(created_at);
+```text
+EXPLICIT ACCESS
+OR
+DENY
 ```
+
+Unknown collections must remain denied until:
+
+1. the collection is formally defined,
+2. authorization requirements are approved,
+3. security rules are written,
+4. server-side authorization is implemented where required,
+5. tests are added,
+6. validation passes.
 
 ---
 
-#### 11. `public.member_session_tokens`
-For tracking active sessions and logout.
+## 10. Server Authority
 
-```sql
-CREATE TABLE member_session_tokens (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  member_id UUID NOT NULL REFERENCES members(id) ON DELETE CASCADE,
-  
-  token_hash TEXT NOT NULL UNIQUE,
-  expires_at TIMESTAMP NOT NULL,
-  
-  -- Metadata
-  ip_address INET,
-  user_agent TEXT,
-  
-  revoked_at TIMESTAMP,
-  
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
-);
+Firebase Security Rules do not replace trusted server authorization.
 
-CREATE INDEX idx_member_session_tokens_member ON member_session_tokens(member_id);
-CREATE INDEX idx_member_session_tokens_expires ON member_session_tokens(expires_at) 
-  WHERE revoked_at IS NULL;
+Privileged application actions should use:
+
+```text
+verified server session
++
+institutional user profile
++
+required account status
++
+required membership status where applicable
++
+required role
++
+resource authorization
 ```
+
+The Firebase Admin SDK bypasses client Security Rules by design.
+
+Therefore trusted server code carries a heightened obligation to enforce institutional authorization correctly.
 
 ---
 
-## Row Level Security (RLS) Policies
+# PLANNED INSTITUTIONAL DATA MODEL
 
-### Policy: Members can only view/edit their own profile
+## 11. Status of Planned Collections
 
-```sql
--- Enable RLS on members table
-ALTER TABLE members ENABLE ROW LEVEL SECURITY;
+The following data families are planned and are not represented by this document as currently deployed production collections:
 
--- Members can select their own data
-CREATE POLICY "Members can select own profile" ON members
-  FOR SELECT USING (
-    auth.uid() = auth_id OR 
-    EXISTS (
-      SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin'
-    )
-  );
+```text
+organizations
+workspaces
+memberships
+roleAssignments
+entitlements
 
--- Members can update their own profile
-CREATE POLICY "Members can update own profile" ON members
-  FOR UPDATE USING (
-    auth.uid() = auth_id
-  ) WITH CHECK (
-    auth.uid() = auth_id AND
-    -- Prevent members from changing their role
-    role = (SELECT role FROM members WHERE auth_id = auth.uid())
-  );
+matters
+parties
+capacities
+authorities
+evidence
+communications
+deadlines
+determinations
+reviews
+remedies
 
--- Admins can update any member
-CREATE POLICY "Admins can update any member" ON members
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  ) WITH CHECK (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
+machineFindings
 ```
 
-### Policy: Member progress is private
+No Firestore rules, indexes, production records, or browser permissions for these collections should be assumed until separately implemented.
 
-```sql
-ALTER TABLE member_progress ENABLE ROW LEVEL SECURITY;
+---
 
-CREATE POLICY "Members can view own progress" ON member_progress
-  FOR SELECT USING (
-    member_id IN (
-      SELECT id FROM members WHERE auth_id = auth.uid()
-    ) OR
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
+## 12. Planned Organization Model
 
-CREATE POLICY "Members can update own progress" ON member_progress
-  FOR UPDATE USING (
-    member_id IN (
-      SELECT id FROM members WHERE auth_id = auth.uid()
-    )
-  );
+Future multi-tenant architecture will introduce an Organization concept.
 
-CREATE POLICY "Members can insert own progress" ON member_progress
-  FOR INSERT WITH CHECK (
-    member_id IN (
-      SELECT id FROM members WHERE auth_id = auth.uid()
-    )
-  );
+Potential canonical collection:
+
+```text
+organizations/{organizationId}
 ```
 
-### Policy: Publications are public for authorized tiers
+An Organization may represent:
 
-```sql
-ALTER TABLE publications ENABLE ROW LEVEL SECURITY;
+- Kelly Legacy Institute
+- professional practice
+- fiduciary office
+- research organization
+- legal or compliance organization
+- enterprise customer
 
-CREATE POLICY "Members can view published content by tier" ON publications
-  FOR SELECT USING (
-    published = TRUE AND
-    required_tier IN (
-      SELECT subscription_tier FROM members WHERE auth_id = auth.uid()
-    )
-  );
+The organization boundary is intended to support tenant isolation and institutional ownership.
 
-CREATE POLICY "Admins can view all publications" ON publications
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
+---
 
-CREATE POLICY "Only admins can create publications" ON publications
-  FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
+## 13. Planned Workspace Model
 
-CREATE POLICY "Only admins can update publications" ON publications
-  FOR UPDATE USING (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
+Potential canonical structure:
+
+```text
+organizations/{organizationId}/workspaces/{workspaceId}
 ```
 
-### Policy: Courses gated by subscription tier
+or an equivalent top-level model with explicit `organizationId`.
 
-```sql
-ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
+The final persistence shape must be selected during implementation review.
 
-CREATE POLICY "Members can view courses by subscription tier" ON courses
-  FOR SELECT USING (
-    published = TRUE AND
-    required_tier IN (
-      SELECT subscription_tier FROM members WHERE auth_id = auth.uid()
-    )
-  );
+A Workspace may scope:
 
-CREATE POLICY "Admins can view all courses" ON courses
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
+- users
+- matters
+- records
+- permissions
+- entitlements
+- configuration
+
+The domain model must be defined before persistence structure is frozen.
+
+---
+
+## 14. Planned Membership Model
+
+Membership represents a user's relationship to an organization or workspace.
+
+Membership is distinct from global identity.
+
+A single authenticated user may eventually hold different memberships across organizations.
+
+Possible attributes include:
+
+- userId
+- organizationId
+- workspaceId
+- status
+- joinedAt
+- invitedBy
+- role assignments
+
+---
+
+## 15. Planned Role Assignment Model
+
+Future authorization should support scoped role assignments rather than relying exclusively on one global user role.
+
+Potential roles may include:
+
+```text
+organization_admin
+workspace_admin
+executive_reviewer
+matter_manager
+analyst
+scholar
+read_only_reviewer
 ```
 
-### Policy: Lessons follow course access
+These are planned examples only.
 
-```sql
-ALTER TABLE lessons ENABLE ROW LEVEL SECURITY;
+They are not current application roles.
 
-CREATE POLICY "Members can view lessons for accessible courses" ON lessons
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM courses c
-      WHERE c.id = course_id
-      AND c.published = TRUE
-      AND c.required_tier IN (
-        SELECT subscription_tier FROM members WHERE auth_id = auth.uid()
-      )
-    ) OR
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
-```
+Current application roles remain:
 
-### Policy: Announcements by tier
-
-```sql
-ALTER TABLE announcements ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Members can view announcements for their tier" ON announcements
-  FOR SELECT USING (
-    tier_required IN (
-      SELECT subscription_tier FROM members WHERE auth_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Only admins can create announcements" ON announcements
-  FOR INSERT WITH CHECK (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
-```
-
-### Policy: Audit logs are admin-only
-
-```sql
-ALTER TABLE audit_logs ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Only admins can view audit logs" ON audit_logs
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM members WHERE auth_id = auth.uid() AND role = 'admin')
-  );
-
-CREATE POLICY "Audit logs are insert-only" ON audit_logs
-  FOR INSERT WITH CHECK (TRUE);
+```text
+member
+executive
+admin
 ```
 
 ---
 
-## Migrations
+## 16. Planned Entitlement Model
 
-Migrations are managed in `migrations/` directory using SQL files. Each migration is numbered and timestamped.
+Entitlements are intended to remain separate from authorization.
 
-See [SETUP.md](./SETUP.md) for migration execution instructions.
+Authorization answers:
 
----
+```text
+IS THIS USER ALLOWED TO PERFORM THIS ACTION?
+```
 
-## Data Backup & Recovery
+Entitlement answers:
 
-- **Automated Backups**: Supabase provides daily backups (7-day retention)
-- **Manual Backups**: Use `pg_dump` for full database exports
-- **Point-in-time Recovery**: Available through Supabase dashboard
+```text
+HAS THIS ORGANIZATION OR USER BEEN GRANTED ACCESS TO THIS PRODUCT OR CAPABILITY?
+```
 
----
+Potential entitlements may include:
 
-## Performance Optimization
+```text
+LDIE_BASIC
+LDIE_PRO
+MATTER_REGISTRY
+RESEARCH_LIBRARY
+EXECUTIVE_REVIEW
+CERTIFICATION_PORTAL
+```
 
-### Indexes Created
-- Member auth_id lookup
-- Stripe customer/subscription lookup
-- Course and lesson publication status
-- Progress tracking by member
-- Audit log searches by timestamp and member
-
-### Query Optimization Guidelines
-1. Always use parameterized queries (prevent SQL injection)
-2. Use indexes for WHERE, JOIN, and ORDER BY clauses
-3. Batch inserts for bulk operations
-4. Connection pooling via Supabase
+These identifiers are architectural examples until formally adopted.
 
 ---
 
-## Testing the Database
+# MATTER DOMAIN
 
-```bash
-# Connect to development database
-psql postgresql://[user]:[password]@[host]/[database]
+## 17. Planned `Matter`
 
-# List all tables
-\dt
+A Matter is intended to become the canonical institutional container for an administrative, regulatory, research, trust, estate, litigation, or governance matter.
 
-# View RLS policies
-SELECT tablename, policyname, qual, with_check 
-FROM pg_policies 
-ORDER BY tablename;
+Potential fields include:
 
-# Test RLS policy (as a user)
-SET LOCAL ROLE authenticated;
-SET LOCAL request.jwt.claims = '{"sub": "user-uuid"}';
-SELECT * FROM members;
+- id
+- organizationId
+- workspaceId
+- matterNumber
+- title
+- description
+- matterType
+- jurisdiction
+- status
+- integrityStatus
+- openedAt
+- closedAt
+- createdAt
+- updatedAt
+- createdBy
+
+### Planned Matter Status
+
+```text
+DRAFT
+OPEN
+AWAITING_ACTION
+AWAITING_RESPONSE
+UNDER_REVIEW
+DETERMINED
+ON_REVIEW
+CLOSED
+ARCHIVED
+```
+
+Unknown states must fail closed.
+
+---
+
+## 18. Planned `Party`
+
+A Party identifies the actor.
+
+Potential party types may include:
+
+- individual
+- agency
+- court
+- company
+- trust
+- estate
+- organization
+- government body
+
+Party identity must remain distinct from capacity.
+
+---
+
+## 19. Planned `Capacity`
+
+Capacity identifies the role in which a party acts.
+
+Examples may include:
+
+- trustee
+- beneficiary
+- administrator
+- regulator
+- claimant
+- respondent
+- counsel
+- custodian
+- reviewer
+
+Capacity must not be inferred merely from party identity.
+
+---
+
+# AUTHORITY DOMAIN
+
+## 20. Planned `Authority`
+
+Authority records are intended to represent verified or candidate controlling authorities.
+
+Possible fields include:
+
+- id
+- organizationId
+- workspaceId
+- matterId
+- authorityType
+- jurisdiction
+- issuingBody
+- citation
+- title
+- effectiveDate
+- status
+- delegation
+- duty
+- procedure
+- reviewRights
+- remedy
+- verificationStatus
+- sourceEvidenceIds
+- createdAt
+- updatedAt
+
+An extracted citation is not automatically verified authority.
+
+---
+
+# EVIDENCE DOMAIN
+
+## 21. Planned `Evidence`
+
+Evidence will be a first-class institutional record.
+
+Possible fields include:
+
+- id
+- organizationId
+- workspaceId
+- matterId
+- title
+- evidenceType
+- source
+- receivedAt
+- authenticatedAt
+- admittedAt
+- integrityStatus
+- custody information
+- storage reference
+- checksum
+- provenance
+- createdAt
+- updatedAt
+
+### Planned Evidence Lifecycle
+
+```text
+IDENTIFIED
+REQUESTED
+RECEIVED
+AUTHENTICATED
+ADMITTED
+REJECTED
+SUPERSEDED
+PRESERVED
+```
+
+These states are not interchangeable.
+
+```text
+RECEIVED ≠ AUTHENTICATED
+AUTHENTICATED ≠ ADMITTED
+STORED ≠ PROVEN
 ```
 
 ---
 
-## References
+## 22. Planned Record Integrity Status
 
-- [Supabase RLS Documentation](https://supabase.com/docs/guides/auth/row-level-security)
-- [PostgreSQL RLS Syntax](https://www.postgresql.org/docs/current/ddl-rowsecurity.html)
-- [DATABASE.md](./DATABASE.md) - This document
-- [SETUP.md](./SETUP.md) - Database setup instructions
+```text
+UNREVIEWED
+VERIFIED
+QUALIFIED
+DISPUTED
+DEFECTIVE
+```
+
+Machine analysis may identify possible integrity concerns.
+
+Human institutional review controls final verification where required.
+
+---
+
+# COMMUNICATION DOMAIN
+
+## 23. Planned `Communication`
+
+Communications may represent:
+
+- letters
+- notices
+- emails
+- filings
+- requests
+- responses
+- service records
+- internal controlled communications
+
+Possible fields include:
+
+- matterId
+- senderPartyId
+- senderCapacityId
+- recipientPartyIds
+- recipientCapacityIds
+- subject
+- sentAt
+- receivedAt
+- serviceMethod
+- evidenceId
+- responseRequired
+- responseDeadlineId
+- provenance
+
+Attempted transmission does not automatically establish receipt.
+
+---
+
+# DEADLINE DOMAIN
+
+## 24. Planned `Deadline`
+
+A controlled deadline should be supported by authority and a triggering event.
+
+Possible fields include:
+
+- matterId
+- deadlineType
+- dueAt
+- authorityId
+- triggeringEventId
+- triggeringEvidenceId
+- calculationMethod
+- status
+- satisfiedAt
+- satisfyingEvidenceId
+- notes
+
+A machine-extracted date is not automatically an institutional deadline.
+
+---
+
+# DETERMINATION DOMAIN
+
+## 25. Planned `Determination`
+
+A Determination is an institutional record.
+
+Possible fields include:
+
+- matterId
+- determinationType
+- issuingPartyId
+- issuingCapacityId
+- issueDate
+- effectiveDate
+- findings
+- authorityIds
+- evidenceIds
+- disposition
+- reviewAvailability
+- reviewDeadlineId
+- sourceEvidenceId
+- provenance
+
+Machine findings must not be persisted as adopted determinations without authorized human review.
+
+---
+
+# REVIEW DOMAIN
+
+## 26. Planned `Review`
+
+Planned review states include:
+
+```text
+NOT_AVAILABLE
+AVAILABLE
+PENDING
+FILED
+DECIDED
+EXHAUSTED
+```
+
+Potential fields include:
+
+- matterId
+- reviewType
+- status
+- reviewingBody
+- filedAt
+- decidedAt
+- deadlineId
+- determinationId
+- evidenceIds
+- authorityIds
+
+Review exhaustion must not be inferred from missing records alone.
+
+---
+
+# REMEDY DOMAIN
+
+## 27. Planned `Remedy`
+
+Possible remedy attributes include:
+
+- matterId
+- remedyType
+- authorityIds
+- prerequisites
+- status
+- preservationDate
+- invocationDate
+- exhaustionDate
+- resultingDeterminationId
+- evidenceIds
+- notes
+
+Machine systems must not independently declare remedies exhausted.
+
+---
+
+# MACHINE FINDINGS
+
+## 28. Planned `MachineFinding`
+
+Machine findings must remain separate from authoritative institutional determinations.
+
+Potential lifecycle:
+
+```text
+PROPOSED
+UNDER_REVIEW
+ADOPTED
+REJECTED
+SUPERSEDED
+```
+
+Possible fields include:
+
+- id
+- organizationId
+- workspaceId
+- matterId
+- sourceRunId
+- sourceEvidenceIds
+- findingType
+- findingText
+- confidence
+- generatedAt
+- processorVersion
+- disposition
+- reviewedBy
+- reviewedAt
+
+`ADOPTED` requires an authorized human review action.
+
+---
+
+# PROVENANCE
+
+## 29. Provenance Model
+
+Governed records should preserve provenance sufficient to establish origin.
+
+Potential provenance attributes include:
+
+- sourceType
+- sourceIdentifier
+- createdBy
+- createdAt
+- creationMethod
+- sourceEvidenceIds
+- machineRunId
+
+Planned creation methods include:
+
+```text
+HUMAN
+IMPORT
+SYSTEM
+LDIE_PROPOSAL
+```
+
+`LDIE_PROPOSAL` does not confer institutional authority.
+
+---
+
+# DOCUMENT STORAGE
+
+## 30. Binary File Storage
+
+Firestore should not be used as the primary binary document store.
+
+The intended separation is:
+
+```text
+Firestore
+→ structured metadata and institutional records
+
+Object Storage
+→ document binaries
+
+Search / Index Infrastructure
+→ retrieval indexes
+
+Audit Store
+→ protected audit history
+```
+
+Document binaries should eventually use appropriate managed object storage.
+
+Storage architecture must preserve linkage between the binary object and its authoritative evidence metadata.
+
+---
+
+# INDEXING
+
+## 31. Firestore Indexes
+
+Indexes should be introduced only in response to implemented query requirements.
+
+Index definitions must correspond to actual application queries.
+
+Indexes should not be created merely because future architecture anticipates a collection.
+
+---
+
+# MIGRATIONS AND SCHEMA EVOLUTION
+
+## 32. Firestore Schema Evolution
+
+Firestore does not use SQL migrations in the same manner as PostgreSQL.
+
+Controlled schema evolution should account for:
+
+- existing records
+- compatibility
+- version changes
+- backfill
+- validation
+- rollback strategy
+- auditability
+
+Application code must not assume all existing records automatically contain newly introduced fields.
+
+---
+
+## 33. Data Backfill
+
+Any future backfill should:
+
+1. identify the exact target population,
+2. preserve existing data,
+3. use deterministic transformation rules,
+4. support dry-run where feasible,
+5. report counts,
+6. record failures,
+7. verify post-write state.
+
+Silent destructive backfills are prohibited.
+
+---
+
+# TESTING
+
+## 34. Database Validation
+
+Database-related changes should include appropriate tests for:
+
+- authorization
+- validators
+- data-access functions
+- status transitions
+- identifier invariants
+- required fields
+- fail-closed behavior
+- publication versioning
+- tenant isolation when implemented
+
+---
+
+## 35. Firebase Security Rule Validation
+
+New browser-accessible collections must not be deployed without Security Rule review.
+
+Security requirements should verify:
+
+```text
+who may read
+who may create
+who may update
+who may delete
+which fields may change
+which fields are immutable
+which tenant boundary applies
+```
+
+Default denial remains the fallback.
+
+---
+
+# HISTORICAL DATABASE ARCHITECTURE
+
+## 36. Superseded PostgreSQL / Supabase Model
+
+Earlier versions of repository documentation described:
+
+- Supabase Auth
+- PostgreSQL
+- public.members
+- courses
+- lessons
+- member_progress
+- SQL migrations
+- Row Level Security
+- service-role keys
+- Supabase Storage
+
+Those structures are historical planning artifacts.
+
+They are not the current authoritative application database.
+
+Historical material may be preserved in repository history or archival documentation for provenance, but it must not be used as active development instruction.
+
+---
+
+# CURRENT DATABASE STATUS
+
+## 37. Implemented vs Planned Summary
+
+### Implemented
+
+```text
+users
+auditEvents
+publications
+```
+
+### Planned
+
+```text
+organizations
+workspaces
+memberships
+roleAssignments
+entitlements
+
+matters
+parties
+capacities
+authorities
+evidence
+communications
+deadlines
+determinations
+reviews
+remedies
+machineFindings
+```
+
+This distinction must remain explicit until implementation evidence supports promotion of a planned collection to implemented status.
+
+---
+
+## 38. Governing Files
+
+Current database authority is distributed across:
+
+```text
+DATABASE.md
+ARCHITECTURE.md
+firestore.rules
+src/lib/firebase/
+src/lib/auth/
+src/lib/publications.ts
+src/lib/publication-record.ts
+src/lib/publication-validation.ts
+docs/governance/
+```
+
+Where documentation conflicts with implementation, the conflict must be treated as a controlled defect and reconciled.
+
+---
+
+## 39. Change Control
+
+Material database changes require controlled review where they affect:
+
+- identity
+- authorization
+- tenant boundaries
+- protected fields
+- evidentiary status
+- authority verification
+- matter lifecycle
+- determinations
+- review posture
+- remedies
+- machine finding disposition
+- audit history
+- retention
+- deletion
+
+No database schema should redefine institutional semantics merely for implementation convenience.
+
+---
+
+## 40. Governing Principle
+
+> **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
