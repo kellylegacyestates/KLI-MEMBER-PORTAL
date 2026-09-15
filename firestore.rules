@@ -79,6 +79,25 @@ service cloud.firestore {
     }
 
     // -----------------------------------------------------------------------
+    // organizations/{organizationId}
+    //
+    // P4-W03 introduces trusted server-side persistence for organizations,
+    // workspaces, and memberships. Browser access remains explicitly denied
+    // until a separately reviewed client-access model is implemented.
+    // -----------------------------------------------------------------------
+    match /organizations/{organizationId} {
+      allow read, write: if false;
+
+      match /workspaces/{workspaceId} {
+        allow read, write: if false;
+      }
+
+      match /memberships/{membershipId} {
+        allow read, write: if false;
+      }
+    }
+
+    // -----------------------------------------------------------------------
     // All other collections are denied by default.
     // -----------------------------------------------------------------------
     match /{document=**} {

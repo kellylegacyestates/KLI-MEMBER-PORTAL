@@ -1165,3 +1165,61 @@ No database schema should redefine institutional semantics merely for implementa
 ## 40. Governing Principle
 
 > **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
+
+---
+
+## P4-W03 — Multi-Tenant / Workspace Foundation
+
+### Implemented Tenant Persistence
+
+Trusted server-side persistence now uses:
+
+```text
+organizations/{organizationId}
+organizations/{organizationId}/workspaces/{workspaceId}
+organizations/{organizationId}/memberships/{membershipId}
+```
+
+The implemented hierarchy is:
+
+```text
+Organization
+    ↓
+Workspace
+    ↓
+future tenant-scoped institutional records
+```
+
+### Access Boundary
+
+Browser reads and writes to organizations, workspaces, and memberships remain explicitly denied by Firebase Security Rules.
+
+Persistence is currently available only through trusted Firebase Admin server repositories.
+
+Tenant authorization fails closed unless membership establishes:
+
+- the correct user
+- the correct organization
+- the correct workspace where required
+- ACTIVE membership status
+
+The architecture preserves:
+
+```text
+Identity ≠ Membership
+Membership ≠ Entitlement
+Organization Membership ≠ Automatic Workspace Access
+```
+
+### Not Yet Implemented
+
+P4-W03 does not implement:
+
+```text
+Matter persistence
+Evidence persistence
+Authority persistence
+browser tenant access
+tenant administration UI
+LDIE persistence
+```
