@@ -12,3 +12,5 @@ export * from "./deadlineRepository";
 export * from "./determinationRepository";
 export * from "./reviewRepository";
 export * from "./remedyRepository";
+export * from "./machineFindingRepository";
+export * from "./auditEventRepository";

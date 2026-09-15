@@ -1458,3 +1458,72 @@ record-management UI
 LDIE runtime integration
 executive determination workflow
 ```
+
+---
+
+## P4-W07 — MachineFinding & AuditEvent Persistence
+
+### MachineFinding Persistence
+
+Trusted server-side MachineFinding persistence uses:
+
+`organizations/{organizationId}/workspaces/{workspaceId}/matters/{matterId}/machineFindings/{machineFindingId}`
+
+MachineFinding is Matter-scoped.
+
+Its Organization, Workspace, Matter, and record identifiers are immutable after creation.
+
+MachineFinding persistence supports create, get, and update.
+
+**MachineFinding ≠ Determination.**
+
+Persisting or updating a MachineFinding does not establish an institutional determination.
+
+### AuditEvent Persistence
+
+Workspace-scoped AuditEvent persistence uses:
+
+`organizations/{organizationId}/workspaces/{workspaceId}/auditEvents/{auditEventId}`
+
+The current persistence boundary requires both `organizationId` and `workspaceId`.
+
+AuditEvent persistence supports append and get.
+
+AuditEvent does not support update or delete operations through the institutional repository.
+
+**AuditEvent = append-only institutional history.**
+
+**AuditEvent ≠ mutable business state.**
+
+### Browser Access
+
+Browser reads and writes remain explicitly denied for `machineFindings` and `auditEvents`.
+
+Trusted Firebase Admin server code controls persistence.
+
+### Current Boundary
+
+Implemented:
+
+- Matter-scoped MachineFinding persistence
+- MachineFinding scope validation
+- MachineFinding controlled updates
+- workspace-scoped AuditEvent persistence
+- append-only AuditEvent repository behavior
+- AuditEvent scope validation
+- explicit browser denial
+
+Not implemented in this work unit:
+
+- LDIE execution
+- automatic finding adoption
+- automatic determinations
+- executive review workflow
+- browser MachineFinding access
+- browser AuditEvent access
+- audit UI
+- system-global AuditEvent persistence
+
+### Governing Principle
+
+**THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
