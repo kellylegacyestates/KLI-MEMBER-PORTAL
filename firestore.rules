@@ -91,6 +91,10 @@ service cloud.firestore {
       match /workspaces/{workspaceId} {
         allow read, write: if false;
 
+        match /auditEvents/{auditEventId} {
+          allow read, write: if false;
+        }
+
         match /matters/{matterId} {
           allow read, write: if false;
 
@@ -119,6 +123,10 @@ service cloud.firestore {
           }
 
           match /remedies/{remedyId} {
+            allow read, write: if false;
+          }
+
+          match /machineFindings/{machineFindingId} {
             allow read, write: if false;
           }
         }

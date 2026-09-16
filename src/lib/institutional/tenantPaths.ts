@@ -89,6 +89,25 @@ export function remedyDocumentPath(
   return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/remedies/${remedyId}`;
 }
 
+
+
+export function machineFindingDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  matterId: string,
+  machineFindingId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/matters/${matterId}/machineFindings/${machineFindingId}`;
+}
+
+export function auditEventDocumentPath(
+  organizationId: OrganizationId,
+  workspaceId: WorkspaceId,
+  auditEventId: string,
+): string {
+  return `organizations/${organizationId}/workspaces/${workspaceId}/auditEvents/${auditEventId}`;
+}
+
 export function membershipDocumentPath(
   organizationId: OrganizationId,
   membershipId: string,
