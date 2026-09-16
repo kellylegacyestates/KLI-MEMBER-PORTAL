@@ -1196,3 +1196,34 @@ The review service does not issue a Determination, close a Matter, exhaust Revie
 **REJECTED ≠ Matter closed.**
 
 **SUPERSEDED ≠ deleted.**
+
+---
+
+## Phase 4 Implementation Reconciliation
+
+The Phase 4 institutional record architecture has progressed beyond the earlier planning descriptions in this document.
+
+The following capabilities are now implemented as trusted server-side institutional infrastructure:
+
+- Organization and Workspace scoping
+- Membership scope validation
+- Matter persistence
+- Evidence persistence
+- Authority persistence
+- Communication persistence
+- Deadline persistence
+- Determination persistence
+- Review persistence
+- Remedy persistence
+- MachineFinding persistence
+- append-only AuditEvent persistence
+- governed LDIE MachineFinding submission
+- authorized executive MachineFinding review and disposition
+
+Browser access to these institutional record chains remains denied by Firestore Security Rules.
+
+MachineFinding disposition remains distinct from Determination issuance, Matter closure, Review exhaustion, and Remedy exhaustion.
+
+Where earlier sections describe these specific Phase 4 capabilities as planned, this reconciliation section controls their implementation status.
+
+**THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**

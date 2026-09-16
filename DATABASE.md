@@ -1568,3 +1568,32 @@ The review service does not persist Determination state, Matter closure, Review 
 Audit history remains append-only.
 
 **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
+
+---
+
+## Phase 4 Implemented Institutional Persistence
+
+Phase 4 now includes trusted server-side persistence and validation for governed institutional record chains under Organization, Workspace, and Matter scope.
+
+Implemented server-controlled record families include:
+
+- Matter
+- Evidence
+- Authority
+- Communication
+- Deadline
+- Determination
+- Review
+- Remedy
+- MachineFinding
+- AuditEvent
+
+These records are not thereby exposed for browser writes. Firestore Security Rules retain the browser-denial boundary for institutional persistence.
+
+LDIE may create only governed PROPOSED MachineFinding records and corresponding audit history.
+
+Authorized executive review may transition MachineFinding records through UNDER_REVIEW to ADOPTED, REJECTED, or SUPERSEDED.
+
+MachineFinding disposition does not itself issue a Determination or close a Matter.
+
+Where earlier sections classify these specific record families as planned, this section supersedes that phase-status description.
