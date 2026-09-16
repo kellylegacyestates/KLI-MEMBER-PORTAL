@@ -1542,3 +1542,29 @@ The MachineFinding and AuditEvent must share the same Organization and Workspace
 The LDIE service does not write Determination, Review, Remedy, or Matter-disposition state.
 
 **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
+
+---
+
+## P4-W09 — Executive Review Persistence Boundary
+
+Executive MachineFinding review persists two coordinated record effects:
+
+1. update of the existing MachineFinding disposition and reviewer metadata
+2. append of a corresponding USER AuditEvent
+
+Authorized state transitions are limited to:
+
+```text
+PROPOSED -> UNDER_REVIEW
+UNDER_REVIEW -> ADOPTED
+UNDER_REVIEW -> REJECTED
+UNDER_REVIEW -> SUPERSEDED
+```
+
+No transition returns a disposed MachineFinding to PROPOSED.
+
+The review service does not persist Determination state, Matter closure, Review exhaustion, or Remedy exhaustion.
+
+Audit history remains append-only.
+
+**THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
