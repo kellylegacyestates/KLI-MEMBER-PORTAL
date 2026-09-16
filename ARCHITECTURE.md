@@ -1161,3 +1161,38 @@ LDIE MUST NOT:
 **Machine output ≠ institutional determination.**
 
 **Persisted finding ≠ adopted finding.**
+
+---
+
+## P4-W09 — Executive MachineFinding Review
+
+Executive review is a human-controlled institutional function layered above LDIE-generated MachineFinding records.
+
+The authorized lifecycle is:
+
+```text
+PROPOSED
+   |
+   v
+UNDER_REVIEW
+   |
+   +--> ADOPTED
+   +--> REJECTED
+   +--> SUPERSEDED
+```
+
+Executive review requires an authorized executive or administrator with active membership.
+
+Reviewer identity and review timestamp are recorded on the MachineFinding.
+
+Each successful review-state transition is accompanied by a USER AuditEvent.
+
+The review service does not issue a Determination, close a Matter, exhaust Review, exhaust Remedy, authenticate Evidence, or independently verify Authority.
+
+**Human MachineFinding disposition ≠ institutional Determination.**
+
+**ADOPTED ≠ adjudicated.**
+
+**REJECTED ≠ Matter closed.**
+
+**SUPERSEDED ≠ deleted.**
