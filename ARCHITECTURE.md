@@ -1126,3 +1126,38 @@ Where conflict exists, it must be treated as an architecture defect and correcte
 > **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
 
 This principle controls the development of the Kelly Legacy Institute Institutional Platform and the Legacy Document Intelligence Engine™.
+
+---
+
+## P4-W08 — LDIE Integration Boundary
+
+The Legacy Document Intelligence Engine (LDIE) operates as a governed analytical subsystem.
+
+LDIE may analyze source material, generate candidate findings, persist PROPOSED MachineFinding records, and append corresponding AuditEvent records.
+
+LDIE does not possess institutional disposition authority.
+
+### LDIE Authority Boundary
+
+LDIE MAY:
+
+- analyze source material
+- generate candidate findings
+- persist PROPOSED MachineFinding records
+- append matching LDIE AuditEvent records
+- return references to persisted analytical records
+
+LDIE MUST NOT:
+
+- issue a Determination
+- close a Matter
+- mark Review exhausted
+- mark Remedy exhausted
+- authenticate Evidence independently
+- verify Authority independently
+- adopt its own MachineFinding
+- delete or rewrite AuditEvent history
+
+**Machine output ≠ institutional determination.**
+
+**Persisted finding ≠ adopted finding.**

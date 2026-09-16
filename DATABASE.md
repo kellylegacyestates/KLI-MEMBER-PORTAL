@@ -1527,3 +1527,18 @@ Not implemented in this work unit:
 ### Governing Principle
 
 **THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
+
+---
+
+## P4-W08 — LDIE Integration Boundary
+
+The trusted LDIE persistence service coordinates only two institutional writes:
+
+1. creation of a PROPOSED MachineFinding
+2. append of a matching LDIE AuditEvent
+
+The MachineFinding and AuditEvent must share the same Organization and Workspace scope, and the AuditEvent must reference the MachineFinding ID.
+
+The LDIE service does not write Determination, Review, Remedy, or Matter-disposition state.
+
+**THE RECORD CONTROLS THE BUILD. THE BUILD DOES NOT REDEFINE THE RECORD.**
